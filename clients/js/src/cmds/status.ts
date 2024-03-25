@@ -4,11 +4,10 @@ import {
   assertChain,
 } from "@certusone/wormhole-sdk/lib/esm/utils/consts";
 import { relayer, Network } from "@certusone/wormhole-sdk";
-import yargs, { string } from "yargs";
-import { CONTRACTS, NETWORKS } from "../consts";
+import yargs from "yargs";
+import { NETWORKS } from "../consts";
 import { assertNetwork } from "../utils";
-import { impossible } from "../vaa";
-import { ethers } from "ethers";
+import { ethers } from "ethers"; //TBDel
 
 export const command = "status <network> <chain> <tx>";
 export const desc =

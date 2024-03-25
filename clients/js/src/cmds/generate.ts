@@ -1,24 +1,18 @@
-import { tryNativeToHexString } from "@certusone/wormhole-sdk/lib/esm/utils/array";
 import {
   assertChain,
   ChainName,
   CHAINS,
-  isCosmWasmChain,
-  isEVMChain,
   toChainId,
 } from "@certusone/wormhole-sdk/lib/esm/utils/consts";
-import { fromBech32, toHex } from "@cosmjs/encoding";
+import { toHex } from "@cosmjs/encoding"; //TBDel
 import base58 from "bs58";
-import { sha3_256 } from "js-sha3";
 import yargs from "yargs";
 import { GOVERNANCE_CHAIN, GOVERNANCE_EMITTER } from "../consts";
-import { evm_address } from "../utils";
 import {
   ContractUpgrade,
   impossible,
   Payload,
   PortalRegisterChain,
-  RecoverChainId,
   serialiseVAA,
   sign,
   TokenBridgeAttestMeta,
@@ -214,47 +208,6 @@ export const builder = function (y: typeof yargs) {
           console.log(serialiseVAA(vaa));
         }
       )
-      // RecoverChainId
-      .command(
-        "recover-chain-id",
-        "Generate a recover chain ID VAA",
-        (yargs) =>
-          yargs
-            .option("module", {
-              alias: "m",
-              describe: "Module to recover",
-              choices: ["Core", "NFTBridge", "TokenBridge"],
-              demandOption: true,
-            } as const)
-            .option("evm-chain-id", {
-              alias: "e",
-              describe: "EVM chain ID to set",
-              type: "string",
-              demandOption: true,
-            })
-            .option("new-chain-id", {
-              alias: "c",
-              describe: "New chain ID to set",
-              type: "number",
-              demandOption: true,
-            }),
-        (argv) => {
-          const module = argv["module"];
-          const payload: RecoverChainId = {
-            module,
-            type: "RecoverChainId",
-            evmChainId: BigInt(argv["evm-chain-id"]),
-            newChainId: argv["new-chain-id"],
-          };
-          const vaa = makeVAA(
-            GOVERNANCE_CHAIN,
-            GOVERNANCE_EMITTER,
-            argv["guardian-secret"].split(","),
-            payload
-          );
-          console.log(serialiseVAA(vaa));
-        }
-      )
       .command(
         "set-default-delivery-provider",
         "Sets the default delivery provider for the Wormhole Relayer contract",
@@ -300,44 +253,13 @@ export const handler = () => {};
 function parseAddress(chain: ChainName, address: string): string {
   if (chain === "unset") {
     throw Error("Chain unset");
-  } else if (isEVMChain(chain)) {
-    return "0x" + evm_address(address);
-  } else if (isCosmWasmChain(chain)) {
-    return "0x" + toHex(fromBech32(address).data).padStart(64, "0");
-  } else if (chain === "solana" || chain === "pythnet") {
+  } else if (chain === "solana") {
     return "0x" + toHex(base58.decode(address)).padStart(64, "0");
-  } else if (chain === "algorand") {
-    // TODO: is there a better native format for algorand?
-    return "0x" + evm_address(address);
-  } else if (chain === "near") {
-    return "0x" + evm_address(address);
-  } else if (chain === "sui") {
-    return "0x" + evm_address(address);
-  } else if (chain === "aptos") {
-    if (/^(0x)?[0-9a-fA-F]+$/.test(address)) {
-      return "0x" + evm_address(address);
-    }
-
-    return sha3_256(Buffer.from(address)); // address is hash of fully qualified type
-  } else if (chain === "btc") {
-    throw Error("btc is not supported yet");
-  } else if (chain === "cosmoshub") {
-    throw Error("cosmoshub is not supported yet");
-  } else if (chain === "evmos") {
-    throw Error("evmos is not supported yet");
-  } else if (chain === "kujira") {
-    throw Error("kujira is not supported yet");
-  } else if (chain === "rootstock") {
-    throw Error("rootstock is not supported yet");
   } else {
     impossible(chain);
   }
 }
 
 function parseCodeAddress(chain: ChainName, address: string): string {
-  if (isCosmWasmChain(chain)) {
-    return "0x" + parseInt(address, 10).toString(16).padStart(64, "0");
-  } else {
-    return parseAddress(chain, address);
-  }
+  return parseAddress(chain, address);
 }

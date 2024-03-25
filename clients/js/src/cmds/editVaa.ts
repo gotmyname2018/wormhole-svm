@@ -20,7 +20,6 @@ import { Implementation__factory } from "@certusone/wormhole-sdk/lib/esm/ethers-
 import { CONTRACTS } from "@certusone/wormhole-sdk/lib/esm/utils/consts";
 import { Other } from "@certusone/wormhole-sdk/lib/esm/vaa";
 import axios from "axios";
-import { ethers } from "ethers";
 import yargs from "yargs";
 import { NETWORK_OPTIONS, NETWORKS } from "../consts";
 import { assertNetwork, Network } from "../utils";
@@ -230,6 +229,7 @@ export const handler = async (
   console.log(serialiseVAA(vaa as unknown as VAA<Payload>));
 };
 
+//TBDel
 // getGuardianSet queries the core contract on Ethereum for the guardian set and returns it.
 const getGuardianSet = async (
   network: Network,

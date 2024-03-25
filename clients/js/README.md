@@ -24,17 +24,13 @@ private keys, based on `.env.sample` in this folder.
 worm <command>
 
 Commands:
-  worm aptos                         Aptos utilities
   worm edit-vaa                      Edits or generates a VAA
-  worm evm                           EVM utilities
   worm generate                      generate VAAs (devnet and testnet only)
   worm info                          Contract, chain, rpc and address information utilities
-  worm near                          NEAR utilities
   worm parse <vaa>                   Parse a VAA (can be in either hex or base64
                                       format)
   worm recover <digest> <signature>  Recover an address from a signature
   worm submit <vaa>                  Execute a VAA
-  worm sui                           Sui utilities
   worm verify-vaa                    Verifies a VAA by querying the core contract on Ethereum
 
 Options:
@@ -45,39 +41,6 @@ Options:
 ### Subcommands
 
 <!--CLI_USAGE-->
-<details>
-<summary> aptos </summary>
-
-```sh
-worm aptos <command>
-
-Commands:
-  worm aptos init-token-bridge              Init token bridge contract
-  worm aptos init-wormhole                  Init Wormhole core contract
-  worm aptos deploy <package-dir>           Deploy an Aptos package
-  worm aptos deploy-resource <seed>         Deploy an Aptos package using a
-  <package-dir>                             resource account
-  worm aptos send-example-message           Send example message
-  <message>
-  worm aptos derive-resource-account        Derive resource account address
-  <account> <seed>
-  worm aptos derive-wrapped-address         Derive wrapped coin type
-  <chain> <origin-address>
-  worm aptos hash-contracts <package-dir>   Hash contract bytecodes for upgrade
-  worm aptos upgrade <package-dir>          Perform upgrade after VAA has been
-                                            submitted
-  worm aptos migrate                        Perform migration after contract
-                                            upgrade
-  worm aptos faucet                         Request money from the faucet for a
-                                            given account
-  worm aptos start-validator                Start a local aptos validator
-
-Options:
-  --help     Show help                                                 [boolean]
-  --version  Show version number                                       [boolean]
-```
-</details>
-
 <details>
 <summary> edit-vaa </summary>
 
@@ -105,32 +68,6 @@ Options:
                                    seconds                              [number]
   -p, --payload                    payload in hex format                [string]
       --guardian-secret, --gs      Guardian's secret key                [string]
-```
-</details>
-
-<details>
-<summary> evm </summary>
-
-```sh
-worm evm <command>
-
-Commands:
-  worm evm address-from-secret <secret>  Compute a 20 byte eth address from a 32
-                                         byte private key
-  worm evm storage-update                Update a storage slot on an EVM fork
-                                         during testing (anvil or hardhat)
-  worm evm chains                        Return all EVM chains
-  worm evm info                          Query info about the on-chain state of
-                                         the contract
-  worm evm hijack                        Override the guardian set of the core
-                                         bridge contract during testing (anvil
-                                         or hardhat)
-  worm evm start-validator               Start a local EVM validator
-
-Options:
-  --help     Show help                                                 [boolean]
-  --version  Show version number                                       [boolean]
-  --rpc      RPC endpoint                                               [string]
 ```
 </details>
 
@@ -187,31 +124,6 @@ Options:
 </details>
 
 <details>
-<summary> near </summary>
-
-```sh
-worm near [command]
-
-Commands:
-  worm near contract-update <file>  Submit a contract update using our specific
-                                    APIs
-  worm near deploy <file>           Submit a contract update using near APIs
-
-Options:
-      --help      Show help                                            [boolean]
-      --version   Show version number                                  [boolean]
-  -m, --module    Module to query  [choices: "Core", "NFTBridge", "TokenBridge"]
-  -n, --network   Network   [required] [choices: "mainnet", "testnet", "devnet"]
-      --account   Near deployment account                    [string] [required]
-      --attach    Attach some near                                      [string]
-      --target    Near account to upgrade                               [string]
-      --mnemonic  Near private keys                                     [string]
-      --key       Near private key                                      [string]
-  -r, --rpc       Override default rpc endpoint url                     [string]
-```
-</details>
-
-<details>
 <summary> parse <vaa> </summary>
 
 ```sh
@@ -249,14 +161,7 @@ Options:
       --help              Show help                                    [boolean]
       --version           Show version number                          [boolean]
   -c, --chain             chain name
-             [choices: "unset", "solana", "ethereum", "terra", "bsc", "polygon",
-        "avalanche", "oasis", "algorand", "aurora", "fantom", "karura", "acala",
-            "klaytn", "celo", "near", "moonbeam", "neon", "terra2", "injective",
-         "osmosis", "sui", "aptos", "arbitrum", "optimism", "gnosis", "pythnet",
-     "xpla", "btc", "base", "sei", "rootstock", "scroll", "mantle", "wormchain",
-      "cosmoshub", "evmos", "kujira", "neutron", "celestia", "stargaze", "seda",
-                     "dymension", "sepolia", "arbitrum_sepolia", "base_sepolia",
-                               "optimism_sepolia", "holesky", "polygon_sepolia"]
+             [choices: "unset", "solana"]
   -n, --network           Network
                             [required] [choices: "mainnet", "testnet", "devnet"]
   -a, --contract-address  Contract to submit VAA to (override config)   [string]
@@ -268,38 +173,6 @@ Options:
 </details>
 
 <details>
-<summary> sui </summary>
-
-```sh
-worm sui <command>
-
-Commands:
-  worm sui build-coin                    Build wrapped coin and dump bytecode.
-
-                                         Example:
-                                         worm sui build-coin -d 8 -v V__0_1_1 -n
-                                         testnet -r
-                                         "https://fullnode.testnet.sui.io:443"
-  worm sui deploy <package-dir>          Deploy a Sui package
-  worm sui init-example-message-app      Initialize example core message app
-  worm sui init-token-bridge             Initialize token bridge contract
-  worm sui init-wormhole                 Initialize wormhole core contract
-  worm sui publish-example-message       Publish message from example app via
-                                         core bridge
-  worm sui setup-devnet                  Setup devnet by deploying and
-                                         initializing core and token bridges and
-                                         submitting chain registrations.
-  worm sui objects <owner>               Get owned objects by owner
-  worm sui package-id <state-object-id>  Get package ID from State object ID
-  worm sui tx <transaction-digest>       Get transaction details
-
-Options:
-  --help     Show help                                                 [boolean]
-  --version  Show version number                                       [boolean]
-```
-</details>
-
-<details>
 <summary> transfer </summary>
 
 ```sh
@@ -307,23 +180,9 @@ Options:
       --help        Show help                                          [boolean]
       --version     Show version number                                [boolean]
       --src-chain   source chain
-           [required] [choices: "solana", "ethereum", "terra", "bsc", "polygon",
-        "avalanche", "oasis", "algorand", "aurora", "fantom", "karura", "acala",
-            "klaytn", "celo", "near", "moonbeam", "neon", "terra2", "injective",
-         "osmosis", "sui", "aptos", "arbitrum", "optimism", "gnosis", "pythnet",
-     "xpla", "btc", "base", "sei", "rootstock", "scroll", "mantle", "wormchain",
-      "cosmoshub", "evmos", "kujira", "neutron", "celestia", "stargaze", "seda",
-                     "dymension", "sepolia", "arbitrum_sepolia", "base_sepolia",
-                               "optimism_sepolia", "holesky", "polygon_sepolia"]
+           [required] [choices: "solana"]
       --dst-chain   destination chain
-           [required] [choices: "solana", "ethereum", "terra", "bsc", "polygon",
-        "avalanche", "oasis", "algorand", "aurora", "fantom", "karura", "acala",
-            "klaytn", "celo", "near", "moonbeam", "neon", "terra2", "injective",
-         "osmosis", "sui", "aptos", "arbitrum", "optimism", "gnosis", "pythnet",
-     "xpla", "btc", "base", "sei", "rootstock", "scroll", "mantle", "wormchain",
-      "cosmoshub", "evmos", "kujira", "neutron", "celestia", "stargaze", "seda",
-                     "dymension", "sepolia", "arbitrum_sepolia", "base_sepolia",
-                               "optimism_sepolia", "holesky", "polygon_sepolia"]
+           [required] [choices: "solana"]
       --dst-addr    destination address                      [string] [required]
       --token-addr  token address               [string] [default: native token]
       --amount      token amount                             [string] [required]
@@ -351,14 +210,7 @@ Options:
 Positionals:
   network  Network                     [choices: "mainnet", "testnet", "devnet"]
   chain    Source chain
-             [choices: "unset", "solana", "ethereum", "terra", "bsc", "polygon",
-        "avalanche", "oasis", "algorand", "aurora", "fantom", "karura", "acala",
-            "klaytn", "celo", "near", "moonbeam", "neon", "terra2", "injective",
-         "osmosis", "sui", "aptos", "arbitrum", "optimism", "gnosis", "pythnet",
-     "xpla", "btc", "base", "sei", "rootstock", "scroll", "mantle", "wormchain",
-      "cosmoshub", "evmos", "kujira", "neutron", "celestia", "stargaze", "seda",
-                     "dymension", "sepolia", "arbitrum_sepolia", "base_sepolia",
-                               "optimism_sepolia", "holesky", "polygon_sepolia"]
+             [choices: "unset", "solana"]
   tx       Source transaction hash                                      [string]
 
 Options:
@@ -453,19 +305,7 @@ For example, to submit a guardian set upgrade on all chains, simply run:
 
 ```sh
 $ worm-fetch-governance 13940208096455381020 > guardian-upgrade.txt
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain oasis
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain aurora
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain fantom
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain karura
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain acala
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain klaytn
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain avalanche
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain polygon
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain bsc
 $ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain solana
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain terra
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain ethereum
-$ worm submit $(cat guardian-upgrade.txt) --network mainnet --chain celo
 ```
 
 The VAA payload type (guardian set upgrade) specifies that this VAA should go to the core bridge, and the tool directs it there.

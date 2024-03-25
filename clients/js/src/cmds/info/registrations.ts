@@ -9,8 +9,6 @@ import {
   CHAINS,
   Contracts,
   CONTRACTS,
-  isEVMChain,
-  isTerraChain,
 } from "@certusone/wormhole-sdk/lib/esm/utils/consts";
 import { getEmitterAddress } from "../../emitter";
 
@@ -59,24 +57,6 @@ export const handler = async (
   if (chain === "solana") {
     const solana = require("../../solana");
     results = await solana.queryRegistrationsSolana(network, module);
-  } else if (isEVMChain(chain)) {
-    const evm = require("../../evm");
-    results = await evm.queryRegistrationsEvm(network, chain, module);
-  } else if (isTerraChain(chain) || chain === "xpla") {
-    const terra = require("../../terra");
-    results = await terra.queryRegistrationsTerra(network, chain, module);
-  } else if (chain === "injective") {
-    const injective = require("../../injective");
-    results = await injective.queryRegistrationsInjective(network, module);
-  } else if (chain === "sei") {
-    const sei = require("../../chains/sei/registrations");
-    results = await sei.queryRegistrationsSei(network, module);
-  } else if (chain === "sui") {
-    const sui = require("../../chains/sui/registrations");
-    results = await sui.queryRegistrationsSui(network, module);
-  } else if (chain === "aptos") {
-    const aptos = require("../../aptos");
-    results = await aptos.queryRegistrationsAptos(network, module);
   } else {
     throw Error(`Command not supported for chain ${chain}`);
   }

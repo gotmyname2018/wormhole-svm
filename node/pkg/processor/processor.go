@@ -13,9 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/zap"
 
-	"github.com/certusone/wormhole/node/pkg/accountant"
 	"github.com/certusone/wormhole/node/pkg/common"
-	"github.com/certusone/wormhole/node/pkg/gwrelayer"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
@@ -82,11 +80,6 @@ type (
 	}
 )
 
-type PythNetVaaEntry struct {
-	v          *vaa.VAA
-	updateTime time.Time // Used for determining when to delete entries
-}
-
 type Processor struct {
 	// msgC is a channel of observed emitted messages
 	msgC <-chan *common.MessagePublication
@@ -123,11 +116,7 @@ type Processor struct {
 	// gk pk as eth address
 	ourAddr ethcommon.Address
 
-	governor       *governor.ChainGovernor
-	acct           *accountant.Accountant
-	acctReadC      <-chan *common.MessagePublication
-	pythnetVaas    map[string]PythNetVaaEntry
-	gatewayRelayer *gwrelayer.GatewayRelayer
+	governor *governor.ChainGovernor
 }
 
 var (
@@ -158,9 +147,6 @@ func NewProcessor(
 	gk *ecdsa.PrivateKey,
 	gst *common.GuardianSetState,
 	g *governor.ChainGovernor,
-	acct *accountant.Accountant,
-	acctReadC <-chan *common.MessagePublication,
-	gatewayRelayer *gwrelayer.GatewayRelayer,
 ) *Processor {
 
 	return &Processor{
@@ -174,14 +160,10 @@ func NewProcessor(
 		gst:          gst,
 		db:           db,
 
-		logger:         supervisor.Logger(ctx),
-		state:          &aggregationState{observationMap{}},
-		ourAddr:        crypto.PubkeyToAddress(gk.PublicKey),
-		governor:       g,
-		acct:           acct,
-		acctReadC:      acctReadC,
-		pythnetVaas:    make(map[string]PythNetVaaEntry),
-		gatewayRelayer: gatewayRelayer,
+		logger:   supervisor.Logger(ctx),
+		state:    &aggregationState{observationMap{}},
+		ourAddr:  crypto.PubkeyToAddress(gk.PublicKey),
+		governor: g,
 	}
 }
 
@@ -194,10 +176,6 @@ func (p *Processor) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			if p.acct != nil {
-				p.acct.Close()
-			}
-
 			// Log these as warnings so they show up in the benchmark logs.
 			metric := &dto.Metric{}
 			_ = observationChanDelay.Write(metric)
@@ -218,25 +196,6 @@ func (p *Processor) Run(ctx context.Context) error {
 				if !p.governor.ProcessMsg(k) {
 					continue
 				}
-			}
-			if p.acct != nil {
-				shouldPub, err := p.acct.SubmitObservation(k)
-				if err != nil {
-					return fmt.Errorf("failed to process message `%s`: %w", k.MessageIDString(), err)
-				}
-				if !shouldPub {
-					continue
-				}
-			}
-			p.handleMessage(k)
-
-		case k := <-p.acctReadC:
-			if p.acct == nil {
-				return fmt.Errorf("received an accountant event when accountant is not configured")
-			}
-			// SECURITY defense-in-depth: Make sure the accountant did not generate an unexpected message.
-			if !p.acct.IsMessageCoveredByAccountant(k) {
-				return fmt.Errorf("accountant published a message that is not covered by it: `%s`", k.MessageIDString())
 			}
 			p.handleMessage(k)
 		case m := <-p.obsvC:
@@ -260,20 +219,11 @@ func (p *Processor) Run(ctx context.Context) error {
 						} else if !msgIsGoverned {
 							return fmt.Errorf("governor published a message that should not be governed: `%s`", k.MessageIDString())
 						}
-						if p.acct != nil {
-							shouldPub, err := p.acct.SubmitObservation(k)
-							if err != nil {
-								return fmt.Errorf("failed to process message released by governor `%s`: %w", k.MessageIDString(), err)
-							}
-							if !shouldPub {
-								continue
-							}
-						}
 						p.handleMessage(k)
 					}
 				}
 			}
-			if (p.governor != nil) || (p.acct != nil) {
+			if p.governor != nil {
 				govTimer.Reset(GovInterval)
 			}
 		}
@@ -281,25 +231,11 @@ func (p *Processor) Run(ctx context.Context) error {
 }
 
 func (p *Processor) storeSignedVAA(v *vaa.VAA) error {
-	if v.EmitterChain == vaa.ChainIDPythNet {
-		key := fmt.Sprintf("%v/%v", v.EmitterAddress, v.Sequence)
-		p.pythnetVaas[key] = PythNetVaaEntry{v: v, updateTime: time.Now()}
-		return nil
-	}
 	return p.db.StoreSignedVAA(v)
 }
 
 // haveSignedVAA returns true if we already have a VAA for the given VAAID
 func (p *Processor) haveSignedVAA(id db.VAAID) bool {
-	if id.EmitterChain == vaa.ChainIDPythNet {
-		if p.pythnetVaas == nil {
-			return false
-		}
-		key := fmt.Sprintf("%v/%v", id.EmitterAddress, id.Sequence)
-		_, exists := p.pythnetVaas[key]
-		return exists
-	}
-
 	if p.db == nil {
 		return false
 	}

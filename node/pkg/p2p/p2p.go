@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/certusone/wormhole/node/pkg/accountant"
 	"github.com/certusone/wormhole/node/pkg/common"
 	"github.com/certusone/wormhole/node/pkg/governor"
 	"github.com/certusone/wormhole/node/pkg/query"
@@ -250,12 +249,10 @@ func Run(
 	nodeName string,
 	disableHeartbeatVerify bool,
 	rootCtxCancel context.CancelFunc,
-	acct *accountant.Accountant,
 	gov *governor.ChainGovernor,
 	signedGovCfg chan *gossipv1.SignedChainGovernorConfig,
 	signedGovSt chan *gossipv1.SignedChainGovernorStatus,
 	components *Components,
-	gatewayRelayerEnabled bool,
 	ccqEnabled bool,
 	signedQueryReqC chan<- *gossipv1.SignedQueryRequest,
 	queryResponseReadC <-chan *query.QueryResponsePublication,
@@ -423,12 +420,6 @@ func Run(
 						features := make([]string, 0)
 						if gov != nil {
 							features = append(features, "governor")
-						}
-						if acct != nil {
-							features = append(features, acct.FeatureString())
-						}
-						if gatewayRelayerEnabled {
-							features = append(features, "gwrelayer")
 						}
 						if ccqEnabled {
 							features = append(features, "ccq")

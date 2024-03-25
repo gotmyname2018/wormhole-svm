@@ -94,8 +94,4 @@ func (p *Processor) broadcastSignedVAA(v *vaa.VAA) {
 	}
 
 	p.gossipSendC <- msg
-
-	if p.gatewayRelayer != nil {
-		p.gatewayRelayer.SubmitVAA(v)
-	}
 }

@@ -1,7 +1,7 @@
 import { Parser } from "binary-parser";
 import * as elliptic from "elliptic";
-import { BigNumber, ethers } from "ethers";
-import { solidityKeccak256 } from "ethers/lib/utils";
+import { BigNumber, ethers } from "ethers"; //TBDel
+import { solidityKeccak256 } from "ethers/lib/utils"; //TBDel
 
 export interface Signature {
   guardianSetIndex: number;

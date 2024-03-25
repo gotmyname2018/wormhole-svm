@@ -15,9 +15,7 @@ import (
 	"github.com/certusone/wormhole/node/pkg/watchers"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/certusone/wormhole/node/pkg/watchers/cosmwasm"
 	"github.com/certusone/wormhole/node/pkg/watchers/solana"
-	"github.com/certusone/wormhole/node/pkg/wormconn" //TBDel
 
 	"github.com/certusone/wormhole/node/pkg/db"
 	"github.com/certusone/wormhole/node/pkg/telemetry"
@@ -57,22 +55,6 @@ var (
 	guardianKeyPath *string
 	solanaContract  *string
 
-	gatewayWS       *string //TBDel
-	gatewayLCD      *string
-	gatewayContract *string
-
-	wormchainURL *string //TBDel
-
-	accountantContract      *string
-	accountantWS            *string
-	accountantCheckEnabled  *bool
-	accountantKeyPath       *string
-	accountantKeyPassPhrase *string
-
-	accountantNttContract      *string //TBDel
-	accountantNttKeyPath       *string
-	accountantNttKeyPassPhrase *string
-
 	solanaRPC *string
 
 	logLevel                *string
@@ -107,10 +89,6 @@ var (
 	ccqP2pBootstrap      *string
 	ccqAllowedPeers      *string
 	ccqBackfillCache     *bool
-
-	gatewayRelayerContract      *string //TBDel
-	gatewayRelayerKeyPath       *string
-	gatewayRelayerKeyPassPhrase *string
 )
 
 func init() {
@@ -129,25 +107,6 @@ func init() {
 
 	guardianKeyPath = NodeCmd.Flags().String("guardianKey", "", "Path to guardian key (required)")
 	solanaContract = NodeCmd.Flags().String("solanaContract", "", "Address of the Solana program (required)")
-
-	//TBDel
-	gatewayWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "gatewayWS", "Path to root for Gateway watcher websocket connection", "ws://wormchain:26657/websocket", []string{"ws", "wss"})
-	gatewayLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "gatewayLCD", "Path to LCD service root for Gateway watcher http calls", "http://wormchain:1317", []string{"http", "https"})
-	gatewayContract = NodeCmd.Flags().String("gatewayContract", "", "Wormhole contract address on Gateway blockchain")
-
-	//TBDel
-	wormchainURL = node.RegisterFlagWithValidationOrFail(NodeCmd, "wormchainURL", "Wormhole-chain gRPC URL", "wormchain:9090", []string{""})
-
-	accountantWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "accountantWS", "Websocket used to listen to the accountant smart contract on wormchain", "http://wormchain:26657", []string{"http", "https"})
-	accountantContract = NodeCmd.Flags().String("accountantContract", "", "Address of the accountant smart contract on wormchain")
-	accountantKeyPath = NodeCmd.Flags().String("accountantKeyPath", "", "path to accountant private key for signing transactions")
-	accountantKeyPassPhrase = NodeCmd.Flags().String("accountantKeyPassPhrase", "", "pass phrase used to unarmor the accountant key file")
-	accountantCheckEnabled = NodeCmd.Flags().Bool("accountantCheckEnabled", false, "Should accountant be enforced on transfers")
-
-	//TBDel
-	accountantNttContract = NodeCmd.Flags().String("accountantNttContract", "", "Address of the NTT accountant smart contract on wormchain")
-	accountantNttKeyPath = NodeCmd.Flags().String("accountantNttKeyPath", "", "path to NTT accountant private key for signing transactions")
-	accountantNttKeyPassPhrase = NodeCmd.Flags().String("accountantNttKeyPassPhrase", "", "pass phrase used to unarmor the NTT accountant key file")
 
 	solanaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "solanaRPC", "Solana RPC URL (required)", "http://solana-devnet:8899", []string{"http", "https"})
 
@@ -183,11 +142,6 @@ func init() {
 	ccqP2pBootstrap = NodeCmd.Flags().String("ccqP2pBootstrap", "", "CCQ P2P bootstrap peers (comma-separated)")
 	ccqAllowedPeers = NodeCmd.Flags().String("ccqAllowedPeers", "", "CCQ allowed P2P peers (comma-separated)")
 	ccqBackfillCache = NodeCmd.Flags().Bool("ccqBackfillCache", true, "Should EVM chains backfill CCQ timestamp cache on startup")
-
-	//TBDel
-	gatewayRelayerContract = NodeCmd.Flags().String("gatewayRelayerContract", "", "Address of the smart contract on wormchain to receive relayed VAAs")
-	gatewayRelayerKeyPath = NodeCmd.Flags().String("gatewayRelayerKeyPath", "", "Path to gateway relayer private key for signing transactions")
-	gatewayRelayerKeyPassPhrase = NodeCmd.Flags().String("gatewayRelayerKeyPassPhrase", "", "Pass phrase used to unarmor the gateway relayer key file")
 }
 
 var (
@@ -324,15 +278,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		logger.Fatal("Please specify --dataDir")
 	}
 
-	//TBDel
-	if *gatewayWS != "" {
-		if *gatewayLCD == "" || *gatewayContract == "" {
-			logger.Fatal("If --gatewayWS is specified, then --gatewayLCD and --gatewayContract must be specified")
-		}
-	} else if *gatewayLCD != "" || *gatewayContract != "" {
-		logger.Fatal("If --gatewayWS is not specified, then --gatewayLCD and --gatewayContract must not be specified")
-	}
-
 	var publicRpcLogDetail common.GrpcLogDetail
 	switch *publicRpcLogDetailStr {
 	case "none":
@@ -429,11 +374,7 @@ func runNode(cmd *cobra.Command, args []string) {
 	}
 
 	rpcMap := make(map[string]string)
-	rpcMap["accountantWS"] = *accountantWS
 	rpcMap["solanaRPC"] = *solanaRPC
-	rpcMap["gatewayWS"] = *gatewayWS //TBDel
-	rpcMap["gatewayLCD"] = *gatewayLCD
-	rpcMap["wormchainURL"] = *wormchainURL
 
 	// Node's main lifecycle context.
 	rootCtx, rootCtxCancel = context.WithCancel(context.Background())
@@ -497,110 +438,6 @@ func runNode(cmd *cobra.Command, args []string) {
 	// Redirect ipfs logs to plain zap
 	ipfslog.SetPrimaryCore(logger.Core())
 
-	//TBDel
-	wormchainId := "wormchain"
-	if *testnetMode {
-		wormchainId = "wormchain-testnet-0"
-	}
-
-	var accountantWormchainConn, accountantNttWormchainConn *wormconn.ClientConn
-	if *accountantContract != "" {
-		if *accountantKeyPath == "" {
-			logger.Fatal("if accountantContract is specified, accountantKeyPath is required", zap.String("component", "gacct"))
-		}
-
-		if *accountantKeyPassPhrase == "" {
-			logger.Fatal("if accountantContract is specified, accountantKeyPassPhrase is required", zap.String("component", "gacct"))
-		}
-
-		keyPathName := *accountantKeyPath
-		if *unsafeDevMode {
-			idx, err := devnet.GetDevnetIndex()
-			if err != nil {
-				logger.Fatal("failed to get devnet index", zap.Error(err), zap.String("component", "gacct"))
-			}
-			keyPathName = fmt.Sprint(*accountantKeyPath, idx)
-		}
-
-		wormchainKey, err := wormconn.LoadWormchainPrivKey(keyPathName, *accountantKeyPassPhrase)
-		if err != nil {
-			logger.Fatal("failed to load accountant private key", zap.Error(err), zap.String("component", "gacct"))
-		}
-
-		// Connect to wormchain for the accountant.
-		logger.Info("Connecting to wormchain for accountant", zap.String("wormchainURL", *wormchainURL), zap.String("keyPath", keyPathName), zap.String("component", "gacct"))
-		accountantWormchainConn, err = wormconn.NewConn(rootCtx, *wormchainURL, wormchainKey, wormchainId)
-		if err != nil {
-			logger.Fatal("failed to connect to wormchain for accountant", zap.Error(err), zap.String("component", "gacct"))
-		}
-	}
-
-	// If the NTT accountant is enabled, create a wormchain connection for it.
-	if *accountantNttContract != "" {
-		if *accountantNttKeyPath == "" {
-			logger.Fatal("if accountantNttContract is specified, accountantNttKeyPath is required", zap.String("component", "gacct"))
-		}
-
-		if *accountantNttKeyPassPhrase == "" {
-			logger.Fatal("if accountantNttContract is specified, accountantNttKeyPassPhrase is required", zap.String("component", "gacct"))
-		}
-
-		keyPathName := *accountantNttKeyPath
-		if *unsafeDevMode {
-			idx, err := devnet.GetDevnetIndex()
-			if err != nil {
-				logger.Fatal("failed to get devnet index", zap.Error(err), zap.String("component", "gacct"))
-			}
-			keyPathName = fmt.Sprint(*accountantNttKeyPath, idx)
-		}
-
-		wormchainKey, err := wormconn.LoadWormchainPrivKey(keyPathName, *accountantNttKeyPassPhrase)
-		if err != nil {
-			logger.Fatal("failed to load NTT accountant private key", zap.Error(err), zap.String("component", "gacct"))
-		}
-
-		// Connect to wormchain for the NTT accountant.
-		logger.Info("Connecting to wormchain for NTT accountant", zap.String("wormchainURL", *wormchainURL), zap.String("keyPath", keyPathName), zap.String("component", "gacct"))
-		accountantNttWormchainConn, err = wormconn.NewConn(rootCtx, *wormchainURL, wormchainKey, wormchainId)
-		if err != nil {
-			logger.Fatal("failed to connect to wormchain for NTT accountant", zap.Error(err), zap.String("component", "gacct"))
-		}
-	}
-
-	var gatewayRelayerWormchainConn *wormconn.ClientConn
-	if *gatewayRelayerContract != "" {
-		if *wormchainURL == "" {
-			logger.Fatal("if gatewayRelayerContract is specified, wormchainURL is required", zap.String("component", "gwrelayer"))
-		}
-		if *gatewayRelayerKeyPath == "" {
-			logger.Fatal("if gatewayRelayerContract is specified, gatewayRelayerKeyPath is required", zap.String("component", "gwrelayer"))
-		}
-
-		if *gatewayRelayerKeyPassPhrase == "" {
-			logger.Fatal("if gatewayRelayerContract is specified, gatewayRelayerKeyPassPhrase is required", zap.String("component", "gwrelayer"))
-		}
-
-		wormchainKeyPathName := *gatewayRelayerKeyPath
-		if *unsafeDevMode {
-			idx, err := devnet.GetDevnetIndex()
-			if err != nil {
-				logger.Fatal("failed to get devnet index", zap.Error(err), zap.String("component", "gwrelayer"))
-			}
-			wormchainKeyPathName = fmt.Sprint(*gatewayRelayerKeyPath, idx)
-		}
-
-		wormchainKey, err := wormconn.LoadWormchainPrivKey(wormchainKeyPathName, *gatewayRelayerKeyPassPhrase)
-		if err != nil {
-			logger.Fatal("failed to load private key", zap.Error(err), zap.String("component", "gwrelayer"))
-		}
-
-		logger.Info("Connecting to wormchain", zap.String("wormchainURL", *wormchainURL), zap.String("keyPath", wormchainKeyPathName), zap.String("component", "gwrelayer"))
-		gatewayRelayerWormchainConn, err = wormconn.NewConn(rootCtx, *wormchainURL, wormchainKey, wormchainId)
-		if err != nil {
-			logger.Fatal("failed to connect to wormchain", zap.Error(err), zap.String("component", "gwrelayer"))
-		}
-
-	}
 	usingPromRemoteWrite := *promRemoteURL != ""
 	if usingPromRemoteWrite {
 		var info promremotew.PromTelemetryInfo
@@ -662,19 +499,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		watcherConfigs = append(watcherConfigs, wc)
 	}
 
-	//TBDel
-	if shouldStart(gatewayWS) {
-		wc := &cosmwasm.WatcherConfig{
-			NetworkID: "gateway",
-			ChainID:   vaa.ChainIDWormchain,
-			Websocket: *gatewayWS,
-			Lcd:       *gatewayLCD,
-			Contract:  *gatewayContract,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
 	guardianNode := node.NewGuardianNode(
 		env,
 		gk,
@@ -683,9 +507,7 @@ func runNode(cmd *cobra.Command, args []string) {
 	guardianOptions := []*node.GuardianOption{
 		node.GuardianOptionDatabase(db),
 		node.GuardianOptionWatchers(watcherConfigs),
-		node.GuardianOptionAccountant(*accountantWS, *accountantContract, *accountantCheckEnabled, accountantWormchainConn, *accountantNttContract, accountantNttWormchainConn),
 		node.GuardianOptionGovernor(*chainGovernorEnabled),
-		node.GuardianOptionGatewayRelayer(*gatewayRelayerContract, gatewayRelayerWormchainConn),
 		node.GuardianOptionQueryHandler(*ccqEnabled, *ccqAllowedRequesters),
 		node.GuardianOptionAdminService(*adminSocketPath, rpcMap),
 		node.GuardianOptionP2P(p2pKey, *p2pNetworkID, *p2pBootstrap, *nodeName, *disableHeartbeatVerify, *p2pPort, *ccqP2pBootstrap, *ccqP2pPort, *ccqAllowedPeers),

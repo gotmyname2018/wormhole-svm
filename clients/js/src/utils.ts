@@ -1,5 +1,5 @@
 import { spawnSync } from "child_process";
-import { ethers } from "ethers";
+import { ethers } from "ethers"; //TBDel
 
 export type Network = "MAINNET" | "TESTNET" | "DEVNET";
 
@@ -20,10 +20,6 @@ export const checkBinary = (binaryName: string, readmeUrl?: string): void => {
     }
     process.exit(1);
   }
-};
-
-export const evm_address = (x: string): string => {
-  return hex(x).substring(2).padStart(64, "0");
 };
 
 export const hex = (x: string): string => {

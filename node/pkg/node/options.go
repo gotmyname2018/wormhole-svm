@@ -2,17 +2,14 @@ package node
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/benbjohnson/clock"
-	"github.com/certusone/wormhole/node/pkg/accountant"
 	"github.com/certusone/wormhole/node/pkg/common"
 	"github.com/certusone/wormhole/node/pkg/db"
 	"github.com/certusone/wormhole/node/pkg/governor"
-	"github.com/certusone/wormhole/node/pkg/gwrelayer" //TBDel
 	"github.com/certusone/wormhole/node/pkg/p2p"
 	"github.com/certusone/wormhole/node/pkg/processor"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
@@ -21,7 +18,6 @@ import (
 	"github.com/certusone/wormhole/node/pkg/supervisor"
 	"github.com/certusone/wormhole/node/pkg/watchers"
 	"github.com/certusone/wormhole/node/pkg/watchers/interfaces"
-	"github.com/certusone/wormhole/node/pkg/wormconn" //TBDel
 	"github.com/gorilla/mux"
 	libp2p_crypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -65,12 +61,10 @@ func GuardianOptionP2P(p2pKey libp2p_crypto.PrivKey, networkId string, bootstrap
 				nodeName,
 				disableHeartbeatVerify,
 				g.rootCtxCancel,
-				g.acct,
 				g.gov,
 				nil,
 				nil,
 				components,
-				(g.gatewayRelayer != nil),
 				(g.queryHandler != nil),
 				g.signedQueryReqC.writeC,
 				g.queryResponsePublicationC.readC,
@@ -107,81 +101,6 @@ func GuardianOptionQueryHandler(ccqEnabled bool, allowedRequesters string) *Guar
 		}}
 }
 
-// GuardianOptionNoAccountant disables the accountant. It is a shorthand for GuardianOptionAccountant("", "", false, nil)
-// Dependencies: none
-func GuardianOptionNoAccountant() *GuardianOption {
-	return &GuardianOption{
-		name: "accountant",
-		f: func(ctx context.Context, logger *zap.Logger, g *G) error {
-			logger.Info("accountant is disabled", zap.String("component", "gacct"))
-			return nil
-		}}
-}
-
-// GuardianOptionAccountant configures the Accountant module.
-// Dependencies: db
-func GuardianOptionAccountant(
-	websocket string,
-	contract string,
-	enforcing bool,
-	wormchainConn *wormconn.ClientConn,
-	nttContract string,
-	nttWormchainConn *wormconn.ClientConn,
-) *GuardianOption {
-	return &GuardianOption{
-		name:         "accountant",
-		dependencies: []string{"db"},
-		f: func(ctx context.Context, logger *zap.Logger, g *G) error {
-			// Set up the accountant. If the accountant smart contract is configured, we will instantiate the accountant and VAAs
-			// will be passed to it for processing. It will forward all token bridge transfers to the accountant contract.
-			// If accountantCheckEnabled is set to true, token bridge transfers will not be signed and published until they
-			// are approved by the accountant smart contract.
-			if contract == "" && nttContract == "" {
-				logger.Info("accountant is disabled", zap.String("component", "gacct"))
-				return nil
-			}
-
-			if websocket == "" {
-				return errors.New("if accountantContract is specified, accountantWS is required")
-			}
-			if contract != "" {
-				if wormchainConn == nil {
-					return errors.New("if accountantContract is specified, the wormchain sending connection must be enabled before")
-				}
-				if enforcing {
-					logger.Info("accountant is enabled and will be enforced", zap.String("component", "gacct"))
-				} else {
-					logger.Info("accountant is enabled but will not be enforced", zap.String("component", "gacct"))
-				}
-			}
-			if nttContract != "" {
-				if nttWormchainConn == nil {
-					return errors.New("if accountantNttContract is specified, the NTT wormchain sending connection must be enabled")
-				}
-				logger.Info("NTT accountant is enabled", zap.String("component", "gacct"))
-			}
-
-			g.acct = accountant.NewAccountant(
-				ctx,
-				logger,
-				g.db,
-				g.obsvReqC.writeC,
-				contract,
-				websocket,
-				wormchainConn,
-				enforcing,
-				nttContract,
-				nttWormchainConn,
-				g.gk,
-				g.gst,
-				g.acctC.writeC,
-				g.env,
-			)
-
-			return nil
-		}}
-}
-
 // GuardianOptionGovernor enables or disables the governor.
 // Dependencies: db
 func GuardianOptionGovernor(governorEnabled bool) *GuardianOption {
@@ -195,25 +114,6 @@ func GuardianOptionGovernor(governorEnabled bool) *GuardianOption {
 			} else {
 				logger.Info("chain governor is disabled")
 			}
-			return nil
-		}}
-}
-
-// GuardianOptionGatewayRelayer configures the Gateway Relayer module. If the gateway relayer smart contract is configured, we will instantiate
-// the GatewayRelayer and signed VAAs will be passed to it for processing when they are published. It will forward payload three transfers destined
-// for the specified contract on wormchain to that contract.
-func GuardianOptionGatewayRelayer(gatewayRelayerContract string, wormchainConn *wormconn.ClientConn) *GuardianOption {
-	return &GuardianOption{
-		name: "gateway-relayer",
-		f: func(ctx context.Context, logger *zap.Logger, g *G) error {
-			g.gatewayRelayer = gwrelayer.NewGatewayRelayer(
-				ctx,
-				logger,
-				gatewayRelayerContract,
-				wormchainConn,
-				g.env,
-			)
-
 			return nil
 		}}
 }
@@ -514,9 +414,6 @@ func GuardianOptionProcessor() *GuardianOption {
 				g.gk,
 				g.gst,
 				g.gov,
-				g.acct,
-				g.acctC.readC,
-				g.gatewayRelayer,
 			).Run
 
 			return nil

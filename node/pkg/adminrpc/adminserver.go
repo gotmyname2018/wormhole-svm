@@ -36,8 +36,6 @@ import (
 	"github.com/certusone/wormhole/node/pkg/common"
 	nodev1 "github.com/certusone/wormhole/node/pkg/proto/node/v1"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
-
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
@@ -209,64 +207,6 @@ func recoverChainId(req *nodev1.RecoverChainId, timestamp time.Time, guardianSet
 	return v, nil
 }
 
-// accountantModifyBalance converts a nodev1.AccountantModifyBalance message to its canonical VAA representation.
-// Returns an error if the data is invalid.
-func accountantModifyBalance(req *nodev1.AccountantModifyBalance, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	if req.TargetChainId > math.MaxUint16 {
-		return nil, errors.New("invalid target_chain_id")
-	}
-	if req.ChainId > math.MaxUint16 {
-		return nil, errors.New("invalid chain_id")
-	}
-	if req.TokenChain > math.MaxUint16 {
-		return nil, errors.New("invalid token_chain")
-	}
-
-	b, err := hex.DecodeString(req.TokenAddress)
-	if err != nil {
-		return nil, errors.New("invalid token address (expected hex)")
-	}
-
-	if len(b) != 32 {
-		return nil, errors.New("invalid new token address (expected 32 bytes)")
-	}
-
-	if len(req.Reason) > 32 {
-		return nil, errors.New("the reason should not be larger than 32 bytes")
-	}
-
-	amount_big := big.NewInt(0)
-	amount_big, ok := amount_big.SetString(req.Amount, 10)
-	if !ok {
-		return nil, errors.New("invalid amount")
-	}
-
-	// uint256 has Bytes32 method for easier serialization
-	amount, overflow := uint256.FromBig(amount_big)
-	if overflow {
-		return nil, errors.New("amount overflow")
-	}
-
-	tokenAdress := vaa.Address{}
-	copy(tokenAdress[:], b)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyAccountantModifyBalance{
-			Module:        req.Module,
-			TargetChainID: vaa.ChainID(req.TargetChainId),
-
-			Sequence:     req.Sequence,
-			ChainId:      vaa.ChainID(req.ChainId),
-			TokenChain:   vaa.ChainID(req.TokenChain),
-			TokenAddress: tokenAdress,
-			Kind:         uint8(req.Kind),
-			Amount:       amount,
-			Reason:       req.Reason,
-		}.Serialize())
-
-	return v, nil
-}
-
 // tokenBridgeUpgradeContract converts a nodev1.TokenBridgeRegisterChain message to its canonical VAA representation.
 // Returns an error if the data is invalid.
 func tokenBridgeUpgradeContract(req *nodev1.BridgeUpgradeContract, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
@@ -292,138 +232,6 @@ func tokenBridgeUpgradeContract(req *nodev1.BridgeUpgradeContract, timestamp tim
 			TargetChainID: vaa.ChainID(req.TargetChainId),
 			NewContract:   newContract,
 		}.Serialize())
-
-	return v, nil
-}
-
-// wormchainStoreCode converts a nodev1.WormchainStoreCode to its canonical VAA representation
-// Returns an error if the data is invalid
-func wormchainStoreCode(req *nodev1.WormchainStoreCode, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	// validate the length of the hex passed in
-	b, err := hex.DecodeString(req.WasmHash)
-	if err != nil {
-		return nil, fmt.Errorf("invalid cosmwasm bytecode hash (expected hex): %w", err)
-	}
-
-	if len(b) != 32 {
-		return nil, fmt.Errorf("invalid cosmwasm bytecode hash (expected 32 bytes but received %d bytes)", len(b))
-	}
-
-	wasmHash := [32]byte{}
-	copy(wasmHash[:], b)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyWormchainStoreCode{
-			WasmHash: wasmHash,
-		}.Serialize())
-
-	return v, nil
-}
-
-// wormchainInstantiateContract converts a nodev1.WormchainInstantiateContract to its canonical VAA representation
-// Returns an error if the data is invalid
-func wormchainInstantiateContract(req *nodev1.WormchainInstantiateContract, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) { //nolint:unparam // error is always nil but kept to mirror function signature of other functions
-	instantiationParams_hash := vaa.CreateInstatiateCosmwasmContractHash(req.CodeId, req.Label, []byte(req.InstantiationMsg))
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyWormchainInstantiateContract{
-			InstantiationParamsHash: instantiationParams_hash,
-		}.Serialize())
-
-	return v, nil
-}
-
-// wormchainMigrateContract converts a nodev1.WormchainMigrateContract to its canonical VAA representation
-func wormchainMigrateContract(req *nodev1.WormchainMigrateContract, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) { //nolint:unparam // error is always nil but kept to mirror function signature of other functions
-	instantiationParams_hash := vaa.CreateMigrateCosmwasmContractHash(req.CodeId, req.Contract, []byte(req.InstantiationMsg))
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyWormchainMigrateContract{
-			MigrationParamsHash: instantiationParams_hash,
-		}.Serialize())
-
-	return v, nil
-}
-
-func wormchainWasmInstantiateAllowlist(
-	req *nodev1.WormchainWasmInstantiateAllowlist,
-	timestamp time.Time,
-	guardianSetIndex uint32,
-	nonce uint32,
-	sequence uint64,
-) (*vaa.VAA, error) { //nolint:unparam // error is always nil but kept to mirror function signature of other functions
-	decodedAddr, err := sdktypes.GetFromBech32(req.Contract, "wormhole")
-	if err != nil {
-		return nil, err
-	}
-
-	var action vaa.GovernanceAction
-	if req.Action == nodev1.WormchainWasmInstantiateAllowlistAction_WORMCHAIN_WASM_INSTANTIATE_ALLOWLIST_ACTION_ADD {
-		action = vaa.ActionAddWasmInstantiateAllowlist
-	} else if req.Action == nodev1.WormchainWasmInstantiateAllowlistAction_WORMCHAIN_WASM_INSTANTIATE_ALLOWLIST_ACTION_DELETE {
-		action = vaa.ActionDeleteWasmInstantiateAllowlist
-	} else {
-		return nil, fmt.Errorf("unrecognized wasm instantiate allowlist action")
-	}
-
-	var decodedAddr32 [32]byte
-	copy(decodedAddr32[:], decodedAddr)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex, vaa.BodyWormchainWasmAllowlistInstantiate{
-		ContractAddr: decodedAddr32,
-		CodeId:       req.CodeId,
-	}.Serialize(action))
-
-	return v, nil
-}
-
-func gatewayScheduleUpgrade(
-	req *nodev1.GatewayScheduleUpgrade,
-	timestamp time.Time,
-	guardianSetIndex uint32,
-	nonce uint32,
-	sequence uint64,
-) (*vaa.VAA, error) { //nolint:unparam // error is always nil but kept to mirror function signature of other functions
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex, vaa.BodyGatewayScheduleUpgrade{
-		Name:   req.Name,
-		Height: req.Height,
-	}.Serialize())
-
-	return v, nil
-}
-
-func gatewayCancelUpgrade(
-	timestamp time.Time,
-	guardianSetIndex uint32,
-	nonce uint32,
-	sequence uint64,
-) (*vaa.VAA, error) { //nolint:unparam // error is always nil but kept to mirror function signature of other functions
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.EmptyPayloadVaa(vaa.GatewayModuleStr, vaa.ActionCancelUpgrade, vaa.ChainIDWormchain),
-	)
-
-	return v, nil
-}
-
-// TBDel
-func gatewayIbcComposabilityMwSetContract(
-	req *nodev1.GatewayIbcComposabilityMwSetContract,
-	timestamp time.Time,
-	guardianSetIndex uint32,
-	nonce uint32,
-	sequence uint64,
-) (*vaa.VAA, error) {
-	decodedAddr, err := sdktypes.GetFromBech32(req.Contract, "wormhole")
-	if err != nil {
-		return nil, err
-	}
-
-	var decodedAddr32 [32]byte
-	copy(decodedAddr32[:], decodedAddr)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex, vaa.BodyGatewayIbcComposabilityMwContract{
-		ContractAddr: decodedAddr32,
-	}.Serialize())
 
 	return v, nil
 }
@@ -473,22 +281,6 @@ func GovMsgToVaa(message *nodev1.GovernanceMessage, currentSetIndex uint32, time
 		v, err = tokenBridgeUpgradeContract(payload.BridgeContractUpgrade, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	case *nodev1.GovernanceMessage_RecoverChainId:
 		v, err = recoverChainId(payload.RecoverChainId, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_AccountantModifyBalance:
-		v, err = accountantModifyBalance(payload.AccountantModifyBalance, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_WormchainStoreCode:
-		v, err = wormchainStoreCode(payload.WormchainStoreCode, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_WormchainInstantiateContract:
-		v, err = wormchainInstantiateContract(payload.WormchainInstantiateContract, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_WormchainMigrateContract:
-		v, err = wormchainMigrateContract(payload.WormchainMigrateContract, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_WormchainWasmInstantiateAllowlist:
-		v, err = wormchainWasmInstantiateAllowlist(payload.WormchainWasmInstantiateAllowlist, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_GatewayScheduleUpgrade:
-		v, err = gatewayScheduleUpgrade(payload.GatewayScheduleUpgrade, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_GatewayCancelUpgrade:
-		v, err = gatewayCancelUpgrade(timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_GatewayIbcComposabilityMwSetContract:
-		v, err = gatewayIbcComposabilityMwSetContract(payload.GatewayIbcComposabilityMwSetContract, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	case *nodev1.GovernanceMessage_WormholeRelayerSetDefaultDeliveryProvider:
 		v, err = wormholeRelayerSetDefaultDeliveryProvider(payload.WormholeRelayerSetDefaultDeliveryProvider, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	default:

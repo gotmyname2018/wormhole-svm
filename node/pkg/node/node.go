@@ -5,11 +5,9 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 
-	"github.com/certusone/wormhole/node/pkg/accountant"
 	"github.com/certusone/wormhole/node/pkg/common"
 	"github.com/certusone/wormhole/node/pkg/db"
 	"github.com/certusone/wormhole/node/pkg/governor"
-	"github.com/certusone/wormhole/node/pkg/gwrelayer"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	"github.com/certusone/wormhole/node/pkg/query"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
@@ -58,9 +56,7 @@ type G struct {
 	// components
 	db              *db.Database
 	gst             *common.GuardianSetState
-	acct            *accountant.Accountant
 	gov             *governor.ChainGovernor
-	gatewayRelayer  *gwrelayer.GatewayRelayer
 	queryHandler    *query.QueryHandler
 	publicrpcServer *grpc.Server
 
@@ -83,8 +79,6 @@ type G struct {
 	obsvReqC channelPair[*gossipv1.ObservationRequest]
 	// Outbound observation requests
 	obsvReqSendC channelPair[*gossipv1.ObservationRequest]
-	// acctC is the channel where messages will be put after they reached quorum in the accountant.
-	acctC channelPair[*common.MessagePublication]
 
 	// Cross Chain Query Handler channels
 	chainQueryReqC            map[vaa.ChainID]chan *query.PerChainQueryInternal
@@ -116,7 +110,6 @@ func (g *G) initializeBasic(rootCtxCancel context.CancelFunc) {
 	g.signedInC = makeChannelPair[*gossipv1.SignedVAAWithQuorum](inboundSignedVaaBufferSize)
 	g.obsvReqC = makeChannelPair[*gossipv1.ObservationRequest](observationRequestInboundBufferSize)
 	g.obsvReqSendC = makeChannelPair[*gossipv1.ObservationRequest](observationRequestOutboundBufferSize)
-	g.acctC = makeChannelPair[*common.MessagePublication](accountant.MsgChannelCapacity)
 	// Cross Chain Query Handler channels
 	g.chainQueryReqC = make(map[vaa.ChainID]chan *query.PerChainQueryInternal)
 	g.signedQueryReqC = makeChannelPair[*gossipv1.SignedQueryRequest](query.SignedQueryRequestChannelSize)
@@ -181,27 +174,13 @@ func (g *G) Run(rootCtxCancel context.CancelFunc, options ...*GuardianOption) su
 			}
 		}
 
-		// TODO there is an opportunity to refactor the startup of the accountant and governor:
-		// Ideally they should just register a g.runnables["governor"] and g.runnables["accountant"] instead of being treated as special cases.
-		if g.acct != nil {
-			logger.Info("Starting accountant")
-			if err := g.acct.Start(ctx); err != nil {
-				logger.Fatal("acct: failed to start accountant", zap.Error(err))
-			}
-			defer g.acct.Close()
-		}
+		// TODO there is an opportunity to refactor the startup of the governor:
+		// Ideally they should just register a g.runnables["governor"] instead of being treated as special cases.
 
 		if g.gov != nil {
 			logger.Info("Starting governor")
 			if err := g.gov.Run(ctx); err != nil {
 				logger.Fatal("failed to create chain governor", zap.Error(err))
-			}
-		}
-
-		if g.gatewayRelayer != nil {
-			logger.Info("Starting gateway relayer")
-			if err := g.gatewayRelayer.Start(ctx); err != nil {
-				logger.Fatal("failed to start gateway relayer", zap.Error(err), zap.String("component", "gwrelayer"))
 			}
 		}
 

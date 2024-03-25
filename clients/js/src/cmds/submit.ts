@@ -6,24 +6,13 @@ import {
   coalesceChainName,
   Contracts,
   CONTRACTS,
-  isEVMChain,
-  isTerraChain,
   toChainName,
 } from "@certusone/wormhole-sdk/lib/esm/utils/consts";
 import yargs from "yargs";
-import { execute_algorand } from "../algorand";
-import { execute_aptos } from "../aptos";
-import { submit as submitSei } from "../chains/sei";
-import { submit as submitSui } from "../chains/sui";
 import { NETWORK_OPTIONS } from "../consts";
-import { execute_evm } from "../evm";
-import { execute_injective } from "../injective";
-import { execute_near } from "../near";
 import { execute_solana } from "../solana";
-import { execute_terra } from "../terra";
 import { assertNetwork } from "../utils";
 import { assertKnownPayload, impossible, parse, Payload, VAA } from "../vaa";
-import { execute_xpla } from "../xpla";
 import { NETWORKS } from "../consts";
 import { Network } from "../utils";
 
@@ -147,61 +136,8 @@ async function executeSubmit(
     throw Error(
       "This VAA does not specify the target chain, please provide it by hand using the '--chain' flag."
     );
-  } else if (isEVMChain(chain)) {
-    await execute_evm(
-      parsedVaa.payload,
-      buf,
-      network,
-      chain,
-      contractAddress,
-      rpc
-    );
-  } else if (isTerraChain(chain)) {
-    await execute_terra(parsedVaa.payload, buf, network, chain);
-  } else if (chain === "solana" || chain === "pythnet") {
+  } else if (chain === "solana") {
     await execute_solana(parsedVaa, buf, network, chain);
-  } else if (chain === "algorand") {
-    await execute_algorand(
-      parsedVaa.payload,
-      new Uint8Array(Buffer.from(vaaHex, "hex")),
-      network
-    );
-  } else if (chain === "near") {
-    await execute_near(parsedVaa.payload, vaaHex, network);
-  } else if (chain === "injective") {
-    await execute_injective(parsedVaa.payload, buf, network);
-  } else if (chain === "xpla") {
-    await execute_xpla(parsedVaa.payload, buf, network);
-  } else if (chain === "sei") {
-    await submitSei(parsedVaa.payload, buf, network, rpc);
-  } else if (chain === "osmosis") {
-    throw Error("OSMOSIS is not supported yet");
-  } else if (chain === "sui") {
-    await submitSui(parsedVaa.payload, buf, network, rpc);
-  } else if (chain === "aptos") {
-    await execute_aptos(parsedVaa.payload, buf, network, contractAddress, rpc);
-  } else if (chain === "wormchain") {
-    throw Error("Wormchain is not supported yet");
-  } else if (chain === "btc") {
-    throw Error("btc is not supported yet");
-  } else if (chain === "cosmoshub") {
-    throw Error("Cosmoshub is not supported yet");
-  } else if (chain === "evmos") {
-    throw Error("Evmos is not supported yet");
-  } else if (chain === "kujira") {
-    throw Error("kujira is not supported yet");
-  } else if (chain === "neutron") {
-    throw Error("neutron is not supported yet");
-  } else if (chain === "celestia") {
-    throw Error("celestia is not supported yet");
-  } else if (chain === "stargaze") {
-    throw Error("stargaze is not supported yet");
-  } else if (chain === "seda") {
-    throw Error("seda is not supported yet");
-  } else if (chain === "dymension") {
-    throw Error("dymension is not supported yet");
-  } else if (chain === "rootstock") {
-    throw Error("rootstock is not supported yet");
   } else {
     // If you get a type error here, hover over `chain`'s type and it tells you
     // which cases are not handled

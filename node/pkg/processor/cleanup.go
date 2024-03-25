@@ -214,14 +214,6 @@ func (p *Processor) handleCleanup(ctx context.Context) {
 			}
 		}
 	}
-
-	// Clean up old pythnet VAAs.
-	oldestTime := time.Now().Add(-time.Hour)
-	for key, pe := range p.pythnetVaas {
-		if pe.updateTime.Before(oldestTime) {
-			delete(p.pythnetVaas, key)
-		}
-	}
 }
 
 // signedVaaAlreadyInDB checks if the VAA is already in the DB. If it is, it makes sure the hash matches.
