@@ -1,12 +1,10 @@
 package node
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"net"
 	"os"
-	"time"
 
 	"github.com/certusone/wormhole/node/pkg/adminrpc"
 	"github.com/certusone/wormhole/node/pkg/common"
@@ -17,10 +15,8 @@ import (
 	publicrpcv1 "github.com/certusone/wormhole/node/pkg/proto/publicrpc/v1"
 	"github.com/certusone/wormhole/node/pkg/publicrpc"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
-	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors"
 	"go.uber.org/zap"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -34,8 +30,6 @@ func adminServiceRunnable(
 	gst *common.GuardianSetState,
 	gov *governor.ChainGovernor,
 	gk *ecdsa.PrivateKey,
-	ethRpc *string,
-	ethContract *string,
 	rpcMap map[string]string,
 ) (supervisor.Runnable, error) {
 	// Delete existing UNIX socket, if present.
@@ -69,18 +63,6 @@ func adminServiceRunnable(
 
 	logger.Info("admin server listening on", zap.String("path", socketPath))
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	var evmConnector connectors.Connector
-	if ethRpc != nil && ethContract != nil {
-		contract := ethcommon.HexToAddress(*ethContract)
-		evmConnector, err = connectors.NewEthereumBaseConnector(ctx, "eth", *ethRpc, contract, logger)
-		if err != nil {
-			return nil, fmt.Errorf("failed to connecto to ethereum")
-		}
-	}
-
 	nodeService := adminrpc.NewPrivService(
 		db,
 		injectC,
@@ -88,7 +70,6 @@ func adminServiceRunnable(
 		logger.Named("adminservice"),
 		signedInC,
 		gov,
-		evmConnector,
 		gk,
 		ethcrypto.PubkeyToAddress(gk.PublicKey),
 		rpcMap,

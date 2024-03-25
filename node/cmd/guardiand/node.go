@@ -9,23 +9,15 @@ import (
 	"os/signal"
 	"path"
 	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/certusone/wormhole/node/pkg/watchers"
-	"github.com/certusone/wormhole/node/pkg/watchers/ibc"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/certusone/wormhole/node/pkg/watchers/cosmwasm"
-
-	"github.com/certusone/wormhole/node/pkg/watchers/algorand"
-	"github.com/certusone/wormhole/node/pkg/watchers/aptos"
-	"github.com/certusone/wormhole/node/pkg/watchers/evm"
-	"github.com/certusone/wormhole/node/pkg/watchers/near"
 	"github.com/certusone/wormhole/node/pkg/watchers/solana"
-	"github.com/certusone/wormhole/node/pkg/watchers/sui"
-	"github.com/certusone/wormhole/node/pkg/wormconn"
+	"github.com/certusone/wormhole/node/pkg/wormconn" //TBDel
 
 	"github.com/certusone/wormhole/node/pkg/db"
 	"github.com/certusone/wormhole/node/pkg/telemetry"
@@ -65,77 +57,11 @@ var (
 	guardianKeyPath *string
 	solanaContract  *string
 
-	ethRPC      *string
-	ethContract *string
-
-	bscRPC      *string
-	bscContract *string
-
-	polygonRPC      *string
-	polygonContract *string
-
-	auroraRPC      *string
-	auroraContract *string
-
-	fantomRPC      *string
-	fantomContract *string
-
-	avalancheRPC      *string
-	avalancheContract *string
-
-	oasisRPC      *string
-	oasisContract *string
-
-	karuraRPC      *string
-	karuraContract *string
-
-	acalaRPC      *string
-	acalaContract *string
-
-	klaytnRPC      *string
-	klaytnContract *string
-
-	celoRPC      *string
-	celoContract *string
-
-	moonbeamRPC      *string
-	moonbeamContract *string
-
-	terraWS       *string
-	terraLCD      *string
-	terraContract *string
-
-	terra2WS       *string
-	terra2LCD      *string
-	terra2Contract *string
-
-	injectiveWS       *string
-	injectiveLCD      *string
-	injectiveContract *string
-
-	xplaWS       *string
-	xplaLCD      *string
-	xplaContract *string
-
-	gatewayWS       *string
+	gatewayWS       *string //TBDel
 	gatewayLCD      *string
 	gatewayContract *string
 
-	algorandIndexerRPC   *string
-	algorandIndexerToken *string
-	algorandAlgodRPC     *string
-	algorandAlgodToken   *string
-	algorandAppID        *uint64
-
-	nearRPC      *string
-	nearContract *string
-
-	wormchainURL *string
-
-	ibcWS             *string
-	ibcLCD            *string
-	ibcBlockHeightURL *string
-	ibcContract       *string
+	wormchainURL *string //TBDel
 
 	accountantContract      *string
 	accountantWS            *string
@@ -143,56 +69,11 @@ var (
 	accountantKeyPath       *string
 	accountantKeyPassPhrase *string
 
-	accountantNttContract      *string
+	accountantNttContract      *string //TBDel
 	accountantNttKeyPath       *string
 	accountantNttKeyPassPhrase *string
 
-	aptosRPC     *string
-	aptosAccount *string
-	aptosHandle  *string
-
-	suiRPC           *string
-	suiWS            *string
-	suiMoveEventType *string
-
 	solanaRPC *string
-
-	pythnetContract *string
-	pythnetRPC      *string
-	pythnetWS       *string
-
-	arbitrumRPC      *string
-	arbitrumContract *string
-
-	optimismRPC      *string
-	optimismContract *string
-
-	baseRPC      *string
-	baseContract *string
-
-	scrollRPC      *string
-	scrollContract *string
-
-	mantleRPC      *string
-	mantleContract *string
-
-	sepoliaRPC      *string
-	sepoliaContract *string
-
-	holeskyRPC      *string
-	holeskyContract *string
-
-	arbitrumSepoliaRPC      *string
-	arbitrumSepoliaContract *string
-
-	baseSepoliaRPC      *string
-	baseSepoliaContract *string
-
-	optimismSepoliaRPC      *string
-	optimismSepoliaContract *string
-
-	polygonSepoliaRPC      *string
-	polygonSepoliaContract *string
 
 	logLevel                *string
 	publicRpcLogDetailStr   *string
@@ -227,7 +108,7 @@ var (
 	ccqAllowedPeers      *string
 	ccqBackfillCache     *bool
 
-	gatewayRelayerContract      *string
+	gatewayRelayerContract      *string //TBDel
 	gatewayRelayerKeyPath       *string
 	gatewayRelayerKeyPassPhrase *string
 )
@@ -249,77 +130,13 @@ func init() {
 	guardianKeyPath = NodeCmd.Flags().String("guardianKey", "", "Path to guardian key (required)")
 	solanaContract = NodeCmd.Flags().String("solanaContract", "", "Address of the Solana program (required)")
 
-	ethRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "ethRPC", "Ethereum RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	ethContract = NodeCmd.Flags().String("ethContract", "", "Ethereum contract address")
-
-	bscRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "bscRPC", "Binance Smart Chain RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	bscContract = NodeCmd.Flags().String("bscContract", "", "Binance Smart Chain contract address")
-
-	polygonRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "polygonRPC", "Polygon RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	polygonContract = NodeCmd.Flags().String("polygonContract", "", "Polygon contract address")
-
-	avalancheRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "avalancheRPC", "Avalanche RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	avalancheContract = NodeCmd.Flags().String("avalancheContract", "", "Avalanche contract address")
-
-	oasisRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "oasisRPC", "Oasis RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	oasisContract = NodeCmd.Flags().String("oasisContract", "", "Oasis contract address")
-
-	auroraRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "auroraRPC", "Aurora Websocket RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	auroraContract = NodeCmd.Flags().String("auroraContract", "", "Aurora contract address")
-
-	fantomRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "fantomRPC", "Fantom Websocket RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	fantomContract = NodeCmd.Flags().String("fantomContract", "", "Fantom contract address")
-
-	karuraRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "karuraRPC", "Karura RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	karuraContract = NodeCmd.Flags().String("karuraContract", "", "Karura contract address")
-
-	acalaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "acalaRPC", "Acala RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	acalaContract = NodeCmd.Flags().String("acalaContract", "", "Acala contract address")
-
-	klaytnRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "klaytnRPC", "Klaytn RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	klaytnContract = NodeCmd.Flags().String("klaytnContract", "", "Klaytn contract address")
-
-	celoRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "celoRPC", "Celo RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	celoContract = NodeCmd.Flags().String("celoContract", "", "Celo contract address")
-
-	moonbeamRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "moonbeamRPC", "Moonbeam RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	moonbeamContract = NodeCmd.Flags().String("moonbeamContract", "", "Moonbeam contract address")
-
-	terraWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "terraWS", "Path to terrad root for websocket connection", "ws://terra-terrad:26657/websocket", []string{"ws", "wss"})
-	terraLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "terraLCD", "Path to LCD service root for http calls", "http://terra-terrad:1317", []string{"http", "https"})
-	terraContract = NodeCmd.Flags().String("terraContract", "", "Wormhole contract address on Terra blockchain")
-
-	terra2WS = node.RegisterFlagWithValidationOrFail(NodeCmd, "terra2WS", "Path to terrad root for websocket connection", "ws://terra2-terrad:26657/websocket", []string{"ws", "wss"})
-	terra2LCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "terra2LCD", "Path to LCD service root for http calls", "http://terra2-terrad:1317", []string{"http", "https"})
-	terra2Contract = NodeCmd.Flags().String("terra2Contract", "", "Wormhole contract address on Terra 2 blockchain")
-
-	injectiveWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "injectiveWS", "Path to root for Injective websocket connection", "ws://injective:26657/websocket", []string{"ws", "wss"})
-	injectiveLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "injectiveLCD", "Path to LCD service root for Injective http calls", "http://injective:1317", []string{"http", "https"})
-	injectiveContract = NodeCmd.Flags().String("injectiveContract", "", "Wormhole contract address on Injective blockchain")
-
-	xplaWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "xplaWS", "Path to root for XPLA websocket connection", "ws://xpla:26657/websocket", []string{"ws", "wss"})
-	xplaLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "xplaLCD", "Path to LCD service root for XPLA http calls", "http://xpla:1317", []string{"http", "https"})
-	xplaContract = NodeCmd.Flags().String("xplaContract", "", "Wormhole contract address on XPLA blockchain")
-
+	//TBDel
 	gatewayWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "gatewayWS", "Path to root for Gateway watcher websocket connection", "ws://wormchain:26657/websocket", []string{"ws", "wss"})
 	gatewayLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "gatewayLCD", "Path to LCD service root for Gateway watcher http calls", "http://wormchain:1317", []string{"http", "https"})
 	gatewayContract = NodeCmd.Flags().String("gatewayContract", "", "Wormhole contract address on Gateway blockchain")
 
-	algorandIndexerRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "algorandIndexerRPC", "Algorand Indexer RPC URL", "http://algorand:8980", []string{"http", "https"})
-	algorandIndexerToken = NodeCmd.Flags().String("algorandIndexerToken", "", "Algorand Indexer access token")
-	algorandAlgodRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "algorandAlgodRPC", "Algorand Algod RPC URL", "http://algorand:4001", []string{"http", "https"})
-	algorandAlgodToken = NodeCmd.Flags().String("algorandAlgodToken", "", "Algorand Algod access token")
-	algorandAppID = NodeCmd.Flags().Uint64("algorandAppID", 0, "Algorand app id")
-
-	nearRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "nearRPC", "Near RPC URL", "http://near:3030", []string{"http", "https"})
-	nearContract = NodeCmd.Flags().String("nearContract", "", "Near contract")
-
+	//TBDel
 	wormchainURL = node.RegisterFlagWithValidationOrFail(NodeCmd, "wormchainURL", "Wormhole-chain gRPC URL", "wormchain:9090", []string{""})
-
-	ibcWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "ibcWS", "Websocket used to listen to the IBC receiver smart contract on wormchain", "ws://wormchain:26657/websocket", []string{"ws", "wss"})
-	ibcLCD = node.RegisterFlagWithValidationOrFail(NodeCmd, "ibcLCD", "Path to LCD service root for http calls", "http://wormchain:1317", []string{"http", "https"})
-	ibcBlockHeightURL = node.RegisterFlagWithValidationOrFail(NodeCmd, "ibcBlockHeightURL", "Optional URL to query for the block height (generated from ibcWS if not specified)", "http://wormchain:1317", []string{"http", "https"})
-	ibcContract = NodeCmd.Flags().String("ibcContract", "", "Address of the IBC smart contract on wormchain")
 
 	accountantWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "accountantWS", "Websocket used to listen to the accountant smart contract on wormchain", "http://wormchain:26657", []string{"http", "https"})
 	accountantContract = NodeCmd.Flags().String("accountantContract", "", "Address of the accountant smart contract on wormchain")
@@ -327,56 +144,12 @@ func init() {
 	accountantKeyPassPhrase = NodeCmd.Flags().String("accountantKeyPassPhrase", "", "pass phrase used to unarmor the accountant key file")
 	accountantCheckEnabled = NodeCmd.Flags().Bool("accountantCheckEnabled", false, "Should accountant be enforced on transfers")
 
+	//TBDel
 	accountantNttContract = NodeCmd.Flags().String("accountantNttContract", "", "Address of the NTT accountant smart contract on wormchain")
 	accountantNttKeyPath = NodeCmd.Flags().String("accountantNttKeyPath", "", "path to NTT accountant private key for signing transactions")
 	accountantNttKeyPassPhrase = NodeCmd.Flags().String("accountantNttKeyPassPhrase", "", "pass phrase used to unarmor the NTT accountant key file")
 
-	aptosRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "aptosRPC", "Aptos RPC URL", "http://aptos:8080", []string{"http", "https"})
-	aptosAccount = NodeCmd.Flags().String("aptosAccount", "", "aptos account")
-	aptosHandle = NodeCmd.Flags().String("aptosHandle", "", "aptos handle")
-
-	suiRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "suiRPC", "Sui RPC URL", "http://sui:9000", []string{"http", "https"})
-	suiWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "suiWS", "Sui WS URL", "ws://sui:9000", []string{"ws", "wss"})
-	suiMoveEventType = NodeCmd.Flags().String("suiMoveEventType", "", "Sui move event type for publish_message")
-
 	solanaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "solanaRPC", "Solana RPC URL (required)", "http://solana-devnet:8899", []string{"http", "https"})
-
-	pythnetContract = NodeCmd.Flags().String("pythnetContract", "", "Address of the PythNet program (required)")
-	pythnetRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "pythnetRPC", "PythNet RPC URL (required)", "http://pythnet.rpcpool.com", []string{"http", "https"})
-	pythnetWS = node.RegisterFlagWithValidationOrFail(NodeCmd, "pythnetWS", "PythNet WS URL", "wss://pythnet.rpcpool.com", []string{"ws", "wss"})
-
-	arbitrumRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "arbitrumRPC", "Arbitrum RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	arbitrumContract = NodeCmd.Flags().String("arbitrumContract", "", "Arbitrum contract address")
-
-	sepoliaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "sepoliaRPC", "Sepolia RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	sepoliaContract = NodeCmd.Flags().String("sepoliaContract", "", "Sepolia contract address")
-
-	holeskyRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "holeskyRPC", "Holesky RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	holeskyContract = NodeCmd.Flags().String("holeskyContract", "", "Holesky contract address")
-
-	optimismRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "optimismRPC", "Optimism RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	optimismContract = NodeCmd.Flags().String("optimismContract", "", "Optimism contract address")
-
-	scrollRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "scrollRPC", "Scroll RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	scrollContract = NodeCmd.Flags().String("scrollContract", "", "Scroll contract address")
-
-	mantleRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "mantleRPC", "Mantle RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	mantleContract = NodeCmd.Flags().String("mantleContract", "", "Mantle contract address")
-
-	baseRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "baseRPC", "Base RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	baseContract = NodeCmd.Flags().String("baseContract", "", "Base contract address")
-
-	arbitrumSepoliaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "arbitrumSepoliaRPC", "Arbitrum on Sepolia RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	arbitrumSepoliaContract = NodeCmd.Flags().String("arbitrumSepoliaContract", "", "Arbitrum on Sepolia contract address")
-
-	baseSepoliaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "baseSepoliaRPC", "Base on Sepolia RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	baseSepoliaContract = NodeCmd.Flags().String("baseSepoliaContract", "", "Base on Sepolia contract address")
-
-	optimismSepoliaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "optimismSepoliaRPC", "Optimism on Sepolia RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	optimismSepoliaContract = NodeCmd.Flags().String("optimismSepoliaContract", "", "Optimism on Sepolia contract address")
-
-	polygonSepoliaRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "polygonSepoliaRPC", "Polygon on Sepolia RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
-	polygonSepoliaContract = NodeCmd.Flags().String("polygonSepoliaContract", "", "Polygon on Sepolia contract address")
 
 	logLevel = NodeCmd.Flags().String("logLevel", "info", "Logging level (debug, info, warn, error, dpanic, panic, fatal)")
 	publicRpcLogDetailStr = NodeCmd.Flags().String("publicRpcLogDetail", "full", "The detail with which public RPC requests shall be logged (none=no logging, minimal=only log gRPC methods, full=log gRPC method, payload (up to 200 bytes) and user agent (up to 200 bytes))")
@@ -411,6 +184,7 @@ func init() {
 	ccqAllowedPeers = NodeCmd.Flags().String("ccqAllowedPeers", "", "CCQ allowed P2P peers (comma-separated)")
 	ccqBackfillCache = NodeCmd.Flags().Bool("ccqBackfillCache", true, "Should EVM chains backfill CCQ timestamp cache on startup")
 
+	//TBDel
 	gatewayRelayerContract = NodeCmd.Flags().String("gatewayRelayerContract", "", "Address of the smart contract on wormchain to receive relayed VAAs")
 	gatewayRelayerKeyPath = NodeCmd.Flags().String("gatewayRelayerKeyPath", "", "Path to gateway relayer private key for signing transactions")
 	gatewayRelayerKeyPassPhrase = NodeCmd.Flags().String("gatewayRelayerKeyPassPhrase", "", "Pass phrase used to unarmor the gateway relayer key file")
@@ -527,31 +301,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		// Use the first guardian node as bootstrap
 		*p2pBootstrap = fmt.Sprintf("/dns4/guardian-0.guardian/udp/%d/quic/p2p/%s", *p2pPort, g0key.String())
 		*ccqP2pBootstrap = fmt.Sprintf("/dns4/guardian-0.guardian/udp/%d/quic/p2p/%s", *ccqP2pPort, g0key.String())
-
-		// Deterministic ganache ETH devnet address.
-		*ethContract = unsafeDevModeEvmContractAddress(*ethContract)
-		*bscContract = unsafeDevModeEvmContractAddress(*bscContract)
-		*polygonContract = unsafeDevModeEvmContractAddress(*polygonContract)
-		*avalancheContract = unsafeDevModeEvmContractAddress(*avalancheContract)
-		*oasisContract = unsafeDevModeEvmContractAddress(*oasisContract)
-		*auroraContract = unsafeDevModeEvmContractAddress(*auroraContract)
-		*fantomContract = unsafeDevModeEvmContractAddress(*fantomContract)
-		*karuraContract = unsafeDevModeEvmContractAddress(*karuraContract)
-		*acalaContract = unsafeDevModeEvmContractAddress(*acalaContract)
-		*klaytnContract = unsafeDevModeEvmContractAddress(*klaytnContract)
-		*celoContract = unsafeDevModeEvmContractAddress(*celoContract)
-		*moonbeamContract = unsafeDevModeEvmContractAddress(*moonbeamContract)
-		*arbitrumContract = unsafeDevModeEvmContractAddress(*arbitrumContract)
-		*optimismContract = unsafeDevModeEvmContractAddress(*optimismContract)
-		*baseContract = unsafeDevModeEvmContractAddress(*baseContract)
-		*sepoliaContract = unsafeDevModeEvmContractAddress(*sepoliaContract)
-		*holeskyContract = unsafeDevModeEvmContractAddress(*holeskyContract)
-		*scrollContract = unsafeDevModeEvmContractAddress(*scrollContract)
-		*mantleContract = unsafeDevModeEvmContractAddress(*mantleContract)
-		*arbitrumSepoliaContract = unsafeDevModeEvmContractAddress(*arbitrumSepoliaContract)
-		*baseSepoliaContract = unsafeDevModeEvmContractAddress(*baseSepoliaContract)
-		*optimismSepoliaContract = unsafeDevModeEvmContractAddress(*optimismSepoliaContract)
-		*polygonSepoliaContract = unsafeDevModeEvmContractAddress(*polygonSepoliaContract)
 	}
 
 	// Verify flags
@@ -574,181 +323,14 @@ func runNode(cmd *cobra.Command, args []string) {
 	if *dataDir == "" {
 		logger.Fatal("Please specify --dataDir")
 	}
-	if *ethRPC == "" {
-		logger.Fatal("Please specify --ethRPC")
-	}
-	if *ethContract == "" {
-		logger.Fatal("Please specify --ethContract")
-	}
-	if *bscRPC == "" {
-		logger.Fatal("Please specify --bscRPC")
-	}
-	if *bscContract == "" {
-		logger.Fatal("Please specify --bscContract")
-	}
-	if *polygonRPC == "" {
-		logger.Fatal("Please specify --polygonRPC")
-	}
-	if *polygonContract == "" {
-		logger.Fatal("Please specify --polygonContract")
-	}
-	if *avalancheRPC == "" {
-		logger.Fatal("Please specify --avalancheRPC")
-	}
-	if *oasisRPC == "" {
-		logger.Fatal("Please specify --oasisRPC")
-	}
-	if *fantomRPC == "" {
-		logger.Fatal("Please specify --fantomRPC")
-	}
-	if *fantomContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --fantomContract")
-	}
-	if *auroraRPC == "" {
-		logger.Fatal("Please specify --auroraRPC")
-	}
-	if *auroraContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --auroraContract")
-	}
-	if *karuraRPC == "" {
-		logger.Fatal("Please specify --karuraRPC")
-	}
-	if *karuraContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --karuraContract")
-	}
-	if *acalaRPC == "" {
-		logger.Fatal("Please specify --acalaRPC")
-	}
-	if *acalaContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --acalaContract")
-	}
-	if *klaytnRPC == "" {
-		logger.Fatal("Please specify --klaytnRPC")
-	}
-	if *klaytnContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --klaytnContract")
-	}
-	if *celoRPC == "" {
-		logger.Fatal("Please specify --celoRPC")
-	}
-	if *celoContract == "" && !*unsafeDevMode {
-		logger.Fatal("Please specify --celoContract")
-	}
-	if *nearRPC != "" {
-		if *nearContract == "" {
-			logger.Fatal("If --nearRPC is specified, then --nearContract must be specified")
-		}
-	} else if *nearContract != "" {
-		logger.Fatal("If --nearRPC is not specified, then --nearContract must not be specified")
-	}
-	if *moonbeamRPC == "" {
-		logger.Fatal("Please specify --moonbeamRPC")
-	}
-	if *moonbeamContract == "" {
-		logger.Fatal("Please specify --moonbeamContract")
-	}
-	if *arbitrumRPC == "" {
-		logger.Fatal("Please specify --arbitrumRPC")
-	}
-	if *arbitrumContract == "" {
-		logger.Fatal("Please specify --arbitrumContract")
-	}
-	if *xplaWS != "" {
-		if *xplaLCD == "" || *xplaContract == "" {
-			logger.Fatal("If --xplaWS is specified, then --xplaLCD and --xplaContract must be specified")
-		}
-	} else if *xplaLCD != "" || *xplaContract != "" {
-		logger.Fatal("If --xplaWS is not specified, then --xplaLCD and --xplaContract must not be specified")
-	}
-	if *aptosRPC != "" {
-		if *aptosAccount == "" {
-			logger.Fatal("If --aptosRPC is specified, then --aptosAccount must be specified")
-		}
-		if *aptosHandle == "" {
-			logger.Fatal("If --aptosRPC is specified, then --aptosHandle must be specified")
-		}
-	}
-	if *suiRPC != "" {
-		if *suiWS == "" {
-			logger.Fatal("If --suiRPC is specified, then --suiWS must be specified")
-		}
-		if *suiMoveEventType == "" {
-			logger.Fatal("If --suiRPC is specified, then --suiMoveEventType must be specified")
-		}
-	}
 
-	if (*optimismRPC == "") != (*optimismContract == "") {
-		logger.Fatal("Both --optimismContract and --optimismRPC must be set together or both unset")
-	}
-
-	if (*baseRPC == "") != (*baseContract == "") {
-		logger.Fatal("Both --baseContract and --baseRPC must be set together or both unset")
-	}
-
-	// Scroll should not be allowed in mainnet until its finality policy is understood and implemented in the watcher.
-	if *scrollRPC != "" && !*testnetMode && !*unsafeDevMode {
-		logger.Fatal("scroll is currently only supported in devnet and testnet")
-	}
-
-	if (*scrollRPC == "") != (*scrollContract == "") {
-		logger.Fatal("Both --scrollContract and --scrollRPC must be set together or both unset")
-	}
-
-	if *mantleRPC != "" && !*testnetMode && !*unsafeDevMode {
-		logger.Fatal("mantle is currently only supported in devnet and testnet")
-	}
-
-	if (*mantleRPC == "") != (*mantleContract == "") {
-		logger.Fatal("Both --mantleContract and --mantleRPC must be set together or both unset")
-	}
-
+	//TBDel
 	if *gatewayWS != "" {
 		if *gatewayLCD == "" || *gatewayContract == "" {
 			logger.Fatal("If --gatewayWS is specified, then --gatewayLCD and --gatewayContract must be specified")
 		}
 	} else if *gatewayLCD != "" || *gatewayContract != "" {
 		logger.Fatal("If --gatewayWS is not specified, then --gatewayLCD and --gatewayContract must not be specified")
-	}
-
-	// These chains are only allowed in devnet and testnet.
-	if *testnetMode || *unsafeDevMode {
-		if (*sepoliaRPC == "") != (*sepoliaContract == "") {
-			logger.Fatal("Both --sepoliaRPC and --sepoliaContract must be set together or both unset")
-		}
-		if (*holeskyRPC == "") != (*holeskyContract == "") {
-			logger.Fatal("Both --holeskyRPC and --holeskyContract must be set together or both unset")
-		}
-		if (*arbitrumSepoliaRPC == "") != (*arbitrumSepoliaContract == "") {
-			logger.Fatal("Both --arbitrumSepoliaRPC and --arbitrumSepoliaContract must be set together or both unset")
-		}
-		if (*baseSepoliaRPC == "") != (*baseSepoliaContract == "") {
-			logger.Fatal("Both --baseSepoliaRPC and --baseSepoliaContract must be set together or both unset")
-		}
-		if (*optimismSepoliaRPC == "") != (*optimismSepoliaContract == "") {
-			logger.Fatal("Both --optimismSepoliaRPC and --optimismSepoliaContract must be set together or both unset")
-		}
-		if (*polygonSepoliaRPC == "") != (*polygonSepoliaContract == "") {
-			logger.Fatal("Both --polygonSepoliaRPC and --polygonSepoliaContract must be set together or both unset")
-		}
-	} else {
-		if *sepoliaRPC != "" || *sepoliaContract != "" {
-			logger.Fatal("Please do not specify --sepoliaRPC or --sepoliaContract")
-		}
-		if *holeskyRPC != "" || *holeskyContract != "" {
-			logger.Fatal("Please do not specify --holeskyRPC or --holeskyContract")
-		}
-		if *arbitrumSepoliaRPC != "" || *arbitrumSepoliaContract != "" {
-			logger.Fatal("Please do not specify --arbitrumSepoliaRPC or --arbitrumSepoliaContract")
-		}
-		if *baseSepoliaRPC != "" || *baseSepoliaContract != "" {
-			logger.Fatal("Please do not specify --baseSepoliaRPC or --baseSepoliaContract")
-		}
-		if *optimismSepoliaRPC != "" || *optimismSepoliaContract != "" {
-			logger.Fatal("Please do not specify --optimismSepoliaRPC or --optimismSepoliaContract")
-		}
-		if *polygonSepoliaRPC != "" || *polygonSepoliaContract != "" {
-			logger.Fatal("Please do not specify --polygonSepoliaRPC or --polygonSepoliaContract")
-		}
 	}
 
 	var publicRpcLogDetail common.GrpcLogDetail
@@ -776,59 +358,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		if *solanaRPC == "" {
 			logger.Fatal("Please specify --solanaRPC")
 		}
-
-		if *terraWS == "" {
-			logger.Fatal("Please specify --terraWS")
-		}
-		if *terraLCD == "" {
-			logger.Fatal("Please specify --terraLCD")
-		}
-		if *terraContract == "" {
-			logger.Fatal("Please specify --terraContract")
-		}
-
-		if *terra2WS == "" {
-			logger.Fatal("Please specify --terra2WS")
-		}
-		if *terra2LCD == "" {
-			logger.Fatal("Please specify --terra2LCD")
-		}
-		if *terra2Contract == "" {
-			logger.Fatal("Please specify --terra2Contract")
-		}
-
-		if *algorandIndexerRPC == "" {
-			logger.Fatal("Please specify --algorandIndexerRPC")
-		}
-		if *algorandAlgodRPC == "" {
-			logger.Fatal("Please specify --algorandAlgodRPC")
-		}
-		if *algorandAlgodToken == "" {
-			logger.Fatal("Please specify --algorandAlgodToken")
-		}
-		if *algorandAppID == 0 {
-			logger.Fatal("Please specify --algorandAppID")
-		}
-
-		if *pythnetContract == "" {
-			logger.Fatal("Please specify --pythnetContract")
-		}
-		if *pythnetRPC == "" {
-			logger.Fatal("Please specify --pythnetRPC")
-		}
-		if *pythnetWS == "" {
-			logger.Fatal("Please specify --pythnetWS")
-		}
-
-		if *injectiveWS == "" {
-			logger.Fatal("Please specify --injectiveWS")
-		}
-		if *injectiveLCD == "" {
-			logger.Fatal("Please specify --injectiveLCD")
-		}
-		if *injectiveContract == "" {
-			logger.Fatal("Please specify --injectiveContract")
-		}
 	}
 
 	// Determine execution mode
@@ -844,29 +373,6 @@ func runNode(cmd *cobra.Command, args []string) {
 
 	if *unsafeDevMode && *testnetMode {
 		logger.Fatal("Cannot be in unsafeDevMode and testnetMode at the same time.")
-	}
-
-	// Complain about Infura on mainnet.
-	//
-	// As it turns out, Infura has a bug where it would sometimes incorrectly round
-	// block timestamps, which causes consensus issues - the timestamp is part of
-	// the VAA and nodes using Infura would sometimes derive an incorrect VAA,
-	// accidentally attacking the network by signing a conflicting VAA.
-	//
-	// Node operators do not usually rely on Infura in the first place - doing
-	// so is insecure, since nodes blindly trust the connected nodes to verify
-	// on-chain message proofs. However, node operators sometimes used
-	// Infura during migrations where their primary node was offline, causing
-	// the aforementioned consensus oddities which were eventually found to
-	// be Infura-related. This is generally to the detriment of network security
-	// and a judgement call made by individual operators. In the case of Infura,
-	// we know it's actively dangerous so let's make an opinionated argument.
-	//
-	// Insert "I'm a sign, not a cop" meme.
-	//
-	if strings.Contains(*ethRPC, "mainnet.infura.io") ||
-		strings.Contains(*polygonRPC, "polygon-mainnet.infura.io") {
-		logger.Fatal("Infura is known to send incorrect blocks - please use your own nodes")
 	}
 
 	// In devnet mode, we generate a deterministic guardian key and write it to disk.
@@ -923,59 +429,11 @@ func runNode(cmd *cobra.Command, args []string) {
 	}
 
 	rpcMap := make(map[string]string)
-	rpcMap["acalaRPC"] = *acalaRPC
 	rpcMap["accountantWS"] = *accountantWS
-	rpcMap["algorandIndexerRPC"] = *algorandIndexerRPC
-	rpcMap["algorandAlgodRPC"] = *algorandAlgodRPC
-	rpcMap["aptosRPC"] = *aptosRPC
-	rpcMap["arbitrumRPC"] = *arbitrumRPC
-	rpcMap["auroraRPC"] = *auroraRPC
-	rpcMap["avalancheRPC"] = *avalancheRPC
-	rpcMap["baseRPC"] = *baseRPC
-	rpcMap["bscRPC"] = *bscRPC
-	rpcMap["celoRPC"] = *celoRPC
-	rpcMap["ethRPC"] = *ethRPC
-	rpcMap["fantomRPC"] = *fantomRPC
-	rpcMap["ibcBlockHeightURL"] = *ibcBlockHeightURL
-	rpcMap["ibcLCD"] = *ibcLCD
-	rpcMap["ibcWS"] = *ibcWS
-	rpcMap["injectiveLCD"] = *injectiveLCD
-	rpcMap["injectiveWS"] = *injectiveWS
-	rpcMap["karuraRPC"] = *karuraRPC
-	rpcMap["klaytnRPC"] = *klaytnRPC
-	rpcMap["mantleRPC"] = *mantleRPC
-	rpcMap["moonbeamRPC"] = *moonbeamRPC
-	rpcMap["nearRPC"] = *nearRPC
-	rpcMap["oasisRPC"] = *oasisRPC
-	rpcMap["optimismRPC"] = *optimismRPC
-	rpcMap["polygonRPC"] = *polygonRPC
-	rpcMap["pythnetRPC"] = *pythnetRPC
-	rpcMap["pythnetWS"] = *pythnetWS
-	if env == common.TestNet {
-		rpcMap["sepoliaRPC"] = *sepoliaRPC
-		rpcMap["holeskyRPC"] = *holeskyRPC
-		rpcMap["arbitrumSepoliaRPC"] = *arbitrumSepoliaRPC
-		rpcMap["baseSepoliaRPC"] = *baseSepoliaRPC
-		rpcMap["optimismSepoliaRPC"] = *optimismSepoliaRPC
-		rpcMap["polygonSepoliaRPC"] = *polygonSepoliaRPC
-	}
-	rpcMap["scrollRPC"] = *scrollRPC
 	rpcMap["solanaRPC"] = *solanaRPC
-	rpcMap["suiRPC"] = *suiRPC
-	rpcMap["suiWS"] = *suiWS
-	rpcMap["terraWS"] = *terraWS
-	rpcMap["terraLCD"] = *terraLCD
-	rpcMap["terra2WS"] = *terra2WS
-	rpcMap["terra2LCD"] = *terra2LCD
-	rpcMap["gatewayWS"] = *gatewayWS
+	rpcMap["gatewayWS"] = *gatewayWS //TBDel
 	rpcMap["gatewayLCD"] = *gatewayLCD
 	rpcMap["wormchainURL"] = *wormchainURL
-	rpcMap["xplaWS"] = *xplaWS
-	rpcMap["xplaLCD"] = *xplaLCD
-
-	for _, ibcChain := range ibc.Chains {
-		rpcMap[ibcChain.String()] = "IBC"
-	}
 
 	// Node's main lifecycle context.
 	rootCtx, rootCtxCancel = context.WithCancel(context.Background())
@@ -1039,6 +497,7 @@ func runNode(cmd *cobra.Command, args []string) {
 	// Redirect ipfs logs to plain zap
 	ipfslog.SetPrimaryCore(logger.Core())
 
+	//TBDel
 	wormchainId := "wormchain"
 	if *testnetMode {
 		wormchainId = "wormchain-testnet-0"
@@ -1176,305 +635,6 @@ func runNode(cmd *cobra.Command, args []string) {
 
 	var watcherConfigs = []watchers.WatcherConfig{}
 
-	if shouldStart(ethRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:              "eth",
-			ChainID:                vaa.ChainIDEthereum,
-			Rpc:                    *ethRPC,
-			Contract:               *ethContract,
-			GuardianSetUpdateChain: true,
-			CcqBackfillCache:       *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(bscRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "bsc",
-			ChainID:          vaa.ChainIDBSC,
-			Rpc:              *bscRPC,
-			Contract:         *bscContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(polygonRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "polygon",
-			ChainID:          vaa.ChainIDPolygon,
-			Rpc:              *polygonRPC,
-			Contract:         *polygonContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(avalancheRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "avalanche",
-			ChainID:          vaa.ChainIDAvalanche,
-			Rpc:              *avalancheRPC,
-			Contract:         *avalancheContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(oasisRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "oasis",
-			ChainID:          vaa.ChainIDOasis,
-			Rpc:              *oasisRPC,
-			Contract:         *oasisContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(auroraRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "aurora",
-			ChainID:          vaa.ChainIDAurora,
-			Rpc:              *auroraRPC,
-			Contract:         *auroraContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(fantomRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "fantom",
-			ChainID:          vaa.ChainIDFantom,
-			Rpc:              *fantomRPC,
-			Contract:         *fantomContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(karuraRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "karura",
-			ChainID:          vaa.ChainIDKarura,
-			Rpc:              *karuraRPC,
-			Contract:         *karuraContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(acalaRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "acala",
-			ChainID:          vaa.ChainIDAcala,
-			Rpc:              *acalaRPC,
-			Contract:         *acalaContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(klaytnRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "klaytn",
-			ChainID:          vaa.ChainIDKlaytn,
-			Rpc:              *klaytnRPC,
-			Contract:         *klaytnContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(celoRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "celo",
-			ChainID:          vaa.ChainIDCelo,
-			Rpc:              *celoRPC,
-			Contract:         *celoContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(moonbeamRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "moonbeam",
-			ChainID:          vaa.ChainIDMoonbeam,
-			Rpc:              *moonbeamRPC,
-			Contract:         *moonbeamContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(arbitrumRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:           "arbitrum",
-			ChainID:             vaa.ChainIDArbitrum,
-			Rpc:                 *arbitrumRPC,
-			Contract:            *arbitrumContract,
-			L1FinalizerRequired: "eth",
-			CcqBackfillCache:    *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(optimismRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "optimism",
-			ChainID:          vaa.ChainIDOptimism,
-			Rpc:              *optimismRPC,
-			Contract:         *optimismContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(baseRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "base",
-			ChainID:          vaa.ChainIDBase,
-			Rpc:              *baseRPC,
-			Contract:         *baseContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(scrollRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "scroll",
-			ChainID:          vaa.ChainIDScroll,
-			Rpc:              *scrollRPC,
-			Contract:         *scrollContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(mantleRPC) {
-		wc := &evm.WatcherConfig{
-			NetworkID:        "mantle",
-			ChainID:          vaa.ChainIDMantle,
-			Rpc:              *mantleRPC,
-			Contract:         *mantleContract,
-			CcqBackfillCache: *ccqBackfillCache,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(terraWS) {
-		wc := &cosmwasm.WatcherConfig{
-			NetworkID: "terra",
-			ChainID:   vaa.ChainIDTerra,
-			Websocket: *terraWS,
-			Lcd:       *terraLCD,
-			Contract:  *terraContract,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(terra2WS) {
-		wc := &cosmwasm.WatcherConfig{
-			NetworkID: "terra2",
-			ChainID:   vaa.ChainIDTerra2,
-			Websocket: *terra2WS,
-			Lcd:       *terra2LCD,
-			Contract:  *terra2Contract,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(xplaWS) {
-		wc := &cosmwasm.WatcherConfig{
-			NetworkID: "xpla",
-			ChainID:   vaa.ChainIDXpla,
-			Websocket: *xplaWS,
-			Lcd:       *xplaLCD,
-			Contract:  *xplaContract,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(injectiveWS) {
-		wc := &cosmwasm.WatcherConfig{
-			NetworkID: "injective",
-			ChainID:   vaa.ChainIDInjective,
-			Websocket: *injectiveWS,
-			Lcd:       *injectiveLCD,
-			Contract:  *injectiveContract,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(algorandIndexerRPC) {
-		wc := &algorand.WatcherConfig{
-			NetworkID:    "algorand",
-			ChainID:      vaa.ChainIDAlgorand,
-			IndexerRPC:   *algorandIndexerRPC,
-			IndexerToken: *algorandIndexerToken,
-			AlgodRPC:     *algorandAlgodRPC,
-			AlgodToken:   *algorandAlgodToken,
-			AppID:        *algorandAppID,
-		}
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(nearRPC) {
-		wc := &near.WatcherConfig{
-			NetworkID: "near",
-			ChainID:   vaa.ChainIDNear,
-			Rpc:       *nearRPC,
-			Contract:  *nearContract,
-		}
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(aptosRPC) {
-		wc := &aptos.WatcherConfig{
-			NetworkID: "aptos",
-			ChainID:   vaa.ChainIDAptos,
-			Rpc:       *aptosRPC,
-			Account:   *aptosAccount,
-			Handle:    *aptosHandle,
-		}
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
-	if shouldStart(suiRPC) {
-		wc := &sui.WatcherConfig{
-			NetworkID:        "sui",
-			ChainID:          vaa.ChainIDSui,
-			Rpc:              *suiRPC,
-			Websocket:        *suiWS,
-			SuiMoveEventType: *suiMoveEventType,
-		}
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
 	if shouldStart(solanaRPC) {
 		// confirmed watcher
 		wc := &solana.WatcherConfig{
@@ -1502,20 +662,7 @@ func runNode(cmd *cobra.Command, args []string) {
 		watcherConfigs = append(watcherConfigs, wc)
 	}
 
-	if shouldStart(pythnetRPC) {
-		wc := &solana.WatcherConfig{
-			NetworkID:     "pythnet",
-			ChainID:       vaa.ChainIDPythNet,
-			Rpc:           *pythnetRPC,
-			Websocket:     *pythnetWS,
-			Contract:      *pythnetContract,
-			ReceiveObsReq: false,
-			Commitment:    rpc.CommitmentConfirmed,
-		}
-
-		watcherConfigs = append(watcherConfigs, wc)
-	}
-
+	//TBDel
 	if shouldStart(gatewayWS) {
 		wc := &cosmwasm.WatcherConfig{
 			NetworkID: "gateway",
@@ -1528,90 +675,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		watcherConfigs = append(watcherConfigs, wc)
 	}
 
-	if *testnetMode || *unsafeDevMode {
-		if shouldStart(sepoliaRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "sepolia",
-				ChainID:          vaa.ChainIDSepolia,
-				Rpc:              *sepoliaRPC,
-				Contract:         *sepoliaContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-
-		if shouldStart(holeskyRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "holesky",
-				ChainID:          vaa.ChainIDHolesky,
-				Rpc:              *holeskyRPC,
-				Contract:         *holeskyContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-
-		if shouldStart(arbitrumSepoliaRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "arbitrum_sepolia",
-				ChainID:          vaa.ChainIDArbitrumSepolia,
-				Rpc:              *arbitrumSepoliaRPC,
-				Contract:         *arbitrumSepoliaContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-
-		if shouldStart(baseSepoliaRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "base_sepolia",
-				ChainID:          vaa.ChainIDBaseSepolia,
-				Rpc:              *baseSepoliaRPC,
-				Contract:         *baseSepoliaContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-
-		if shouldStart(optimismSepoliaRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "optimism_sepolia",
-				ChainID:          vaa.ChainIDOptimismSepolia,
-				Rpc:              *optimismSepoliaRPC,
-				Contract:         *optimismSepoliaContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-
-		if shouldStart(polygonSepoliaRPC) {
-			wc := &evm.WatcherConfig{
-				NetworkID:        "polygon_sepolia",
-				ChainID:          vaa.ChainIDPolygonSepolia,
-				Rpc:              *polygonSepoliaRPC,
-				Contract:         *polygonSepoliaContract,
-				CcqBackfillCache: *ccqBackfillCache,
-			}
-
-			watcherConfigs = append(watcherConfigs, wc)
-		}
-	}
-
-	var ibcWatcherConfig *node.IbcWatcherConfig = nil
-	if shouldStart(ibcWS) {
-		ibcWatcherConfig = &node.IbcWatcherConfig{
-			Websocket:      *ibcWS,
-			Lcd:            *ibcLCD,
-			BlockHeightURL: *ibcBlockHeightURL,
-			Contract:       *ibcContract,
-		}
-	}
-
 	guardianNode := node.NewGuardianNode(
 		env,
 		gk,
@@ -1619,13 +682,13 @@ func runNode(cmd *cobra.Command, args []string) {
 
 	guardianOptions := []*node.GuardianOption{
 		node.GuardianOptionDatabase(db),
-		node.GuardianOptionWatchers(watcherConfigs, ibcWatcherConfig),
+		node.GuardianOptionWatchers(watcherConfigs),
 		node.GuardianOptionAccountant(*accountantWS, *accountantContract, *accountantCheckEnabled, accountantWormchainConn, *accountantNttContract, accountantNttWormchainConn),
 		node.GuardianOptionGovernor(*chainGovernorEnabled),
 		node.GuardianOptionGatewayRelayer(*gatewayRelayerContract, gatewayRelayerWormchainConn),
 		node.GuardianOptionQueryHandler(*ccqEnabled, *ccqAllowedRequesters),
-		node.GuardianOptionAdminService(*adminSocketPath, ethRPC, ethContract, rpcMap),
-		node.GuardianOptionP2P(p2pKey, *p2pNetworkID, *p2pBootstrap, *nodeName, *disableHeartbeatVerify, *p2pPort, *ccqP2pBootstrap, *ccqP2pPort, *ccqAllowedPeers, ibc.GetFeatures),
+		node.GuardianOptionAdminService(*adminSocketPath, rpcMap),
+		node.GuardianOptionP2P(p2pKey, *p2pNetworkID, *p2pBootstrap, *nodeName, *disableHeartbeatVerify, *p2pPort, *ccqP2pBootstrap, *ccqP2pPort, *ccqAllowedPeers),
 		node.GuardianOptionStatusServer(*statusAddr),
 		node.GuardianOptionProcessor(),
 	}
@@ -1656,12 +719,4 @@ func runNode(cmd *cobra.Command, args []string) {
 
 func shouldStart(rpc *string) bool {
 	return *rpc != "" && *rpc != "none"
-}
-
-func unsafeDevModeEvmContractAddress(contractAddr string) string {
-	if contractAddr != "" {
-		return contractAddr
-	}
-
-	return devnet.GanacheWormholeContractAddress.Hex()
 }

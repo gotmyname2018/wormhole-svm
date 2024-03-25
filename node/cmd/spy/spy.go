@@ -354,7 +354,6 @@ func runSpy(cmd *cobra.Command, args []string) {
 				nil,
 				nil,
 				components,
-				nil,   // ibc feature string
 				false, // gateway relayer enabled
 				false, // ccqEnabled
 				nil,   // query requests

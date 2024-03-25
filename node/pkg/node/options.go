@@ -12,7 +12,7 @@ import (
 	"github.com/certusone/wormhole/node/pkg/common"
 	"github.com/certusone/wormhole/node/pkg/db"
 	"github.com/certusone/wormhole/node/pkg/governor"
-	"github.com/certusone/wormhole/node/pkg/gwrelayer"
+	"github.com/certusone/wormhole/node/pkg/gwrelayer" //TBDel
 	"github.com/certusone/wormhole/node/pkg/p2p"
 	"github.com/certusone/wormhole/node/pkg/processor"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
@@ -20,9 +20,8 @@ import (
 	"github.com/certusone/wormhole/node/pkg/readiness"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
 	"github.com/certusone/wormhole/node/pkg/watchers"
-	"github.com/certusone/wormhole/node/pkg/watchers/ibc"
 	"github.com/certusone/wormhole/node/pkg/watchers/interfaces"
-	"github.com/certusone/wormhole/node/pkg/wormconn"
+	"github.com/certusone/wormhole/node/pkg/wormconn" //TBDel
 	"github.com/gorilla/mux"
 	libp2p_crypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -39,7 +38,7 @@ type GuardianOption struct {
 
 // GuardianOptionP2P configures p2p networking.
 // Dependencies: Accountant, Governor
-func GuardianOptionP2P(p2pKey libp2p_crypto.PrivKey, networkId string, bootstrapPeers string, nodeName string, disableHeartbeatVerify bool, port uint, ccqBootstrapPeers string, ccqPort uint, ccqAllowedPeers string, ibcFeaturesFunc func() string) *GuardianOption {
+func GuardianOptionP2P(p2pKey libp2p_crypto.PrivKey, networkId string, bootstrapPeers string, nodeName string, disableHeartbeatVerify bool, port uint, ccqBootstrapPeers string, ccqPort uint, ccqAllowedPeers string) *GuardianOption {
 	return &GuardianOption{
 		name:         "p2p",
 		dependencies: []string{"accountant", "governor", "gateway-relayer"},
@@ -71,7 +70,6 @@ func GuardianOptionP2P(p2pKey libp2p_crypto.PrivKey, networkId string, bootstrap
 				nil,
 				nil,
 				components,
-				ibcFeaturesFunc,
 				(g.gatewayRelayer != nil),
 				(g.queryHandler != nil),
 				g.signedQueryReqC.writeC,
@@ -276,17 +274,10 @@ func GuardianOptionStatusServer(statusAddr string) *GuardianOption {
 		}}
 }
 
-type IbcWatcherConfig struct {
-	Websocket      string
-	Lcd            string
-	BlockHeightURL string
-	Contract       string
-}
-
 // GuardianOptionWatchers configues all normal watchers and all IBC watchers. They need to be all configured at the same time because they may depend on each other.
 // TODO: currently, IBC watchers are partially statically configured in ibc.ChainConfig. It might make sense to refactor this to instead provide this as a parameter here.
 // Dependencies: none
-func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig, ibcWatcherConfig *IbcWatcherConfig) *GuardianOption {
+func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig) *GuardianOption {
 	return &GuardianOption{
 		name: "watchers",
 		f: func(ctx context.Context, logger *zap.Logger, g *G) error {
@@ -411,39 +402,6 @@ func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig, ibcWatcherC
 				watchers[wc.GetNetworkID()] = l1finalizer
 			}
 
-			if ibcWatcherConfig != nil {
-
-				var chainConfig ibc.ChainConfig
-				for _, chainID := range ibc.Chains {
-
-					if _, exists := chainMsgC[chainID]; !exists {
-						return fmt.Errorf("invalid IBC chain ID: %s", chainID.String())
-					}
-
-					if _, exists := chainObsvReqC[chainID]; exists {
-						logger.Warn("not monitoring chain with IBC because it is already registered.", zap.Stringer("chainID", chainID))
-						continue
-					}
-
-					chainObsvReqC[chainID] = make(chan *gossipv1.ObservationRequest, observationRequestPerChainBufferSize)
-					common.MustRegisterReadinessSyncing(chainID)
-
-					chainConfig = append(chainConfig, ibc.ChainConfigEntry{
-						ChainID:  chainID,
-						MsgC:     chainMsgC[chainID],
-						ObsvReqC: chainObsvReqC[chainID],
-					})
-				}
-
-				if len(chainConfig) > 0 {
-					logger.Info("Starting IBC watcher")
-					readiness.RegisterComponent(common.ReadinessIBCSyncing)
-					g.runnablesWithScissors["ibcwatch"] = ibc.NewWatcher(ibcWatcherConfig.Websocket, ibcWatcherConfig.Lcd, ibcWatcherConfig.BlockHeightURL, ibcWatcherConfig.Contract, chainConfig).Run
-				} else {
-					return errors.New("although IBC is enabled, there are no chains for it to monitor")
-				}
-			}
-
 			go handleReobservationRequests(ctx, clock.New(), logger, g.obsvReqC.readC, chainObsvReqC)
 
 			return nil
@@ -452,7 +410,7 @@ func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig, ibcWatcherC
 
 // GuardianOptionAdminService enables the admin rpc service on a unix socket.
 // Dependencies: db, governor
-func GuardianOptionAdminService(socketPath string, ethRpc *string, ethContract *string, rpcMap map[string]string) *GuardianOption {
+func GuardianOptionAdminService(socketPath string, rpcMap map[string]string) *GuardianOption {
 	return &GuardianOption{
 		name:         "admin-service",
 		dependencies: []string{"governor", "db"},
@@ -467,8 +425,6 @@ func GuardianOptionAdminService(socketPath string, ethRpc *string, ethContract *
 				g.gst,
 				g.gov,
 				g.gk,
-				ethRpc,
-				ethContract,
 				rpcMap,
 			)
 			if err != nil {

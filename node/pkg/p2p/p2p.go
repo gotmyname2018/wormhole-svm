@@ -255,7 +255,6 @@ func Run(
 	signedGovCfg chan *gossipv1.SignedChainGovernorConfig,
 	signedGovSt chan *gossipv1.SignedChainGovernorStatus,
 	components *Components,
-	ibcFeaturesFunc func() string,
 	gatewayRelayerEnabled bool,
 	ccqEnabled bool,
 	signedQueryReqC chan<- *gossipv1.SignedQueryRequest,
@@ -427,12 +426,6 @@ func Run(
 						}
 						if acct != nil {
 							features = append(features, acct.FeatureString())
-						}
-						if ibcFeaturesFunc != nil {
-							ibcFlags := ibcFeaturesFunc()
-							if ibcFlags != "" {
-								features = append(features, ibcFlags)
-							}
 						}
 						if gatewayRelayerEnabled {
 							features = append(features, "gwrelayer")

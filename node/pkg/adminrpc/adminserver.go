@@ -19,7 +19,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors"
 	"github.com/holiman/uint256"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -57,7 +56,6 @@ type nodePrivilegedService struct {
 	logger          *zap.Logger
 	signedInC       chan<- *gossipv1.SignedVAAWithQuorum
 	governor        *governor.ChainGovernor
-	evmConnector    connectors.Connector
 	gsCache         sync.Map
 	gk              *ecdsa.PrivateKey
 	guardianAddress ethcommon.Address
@@ -71,7 +69,6 @@ func NewPrivService(
 	logger *zap.Logger,
 	signedInC chan<- *gossipv1.SignedVAAWithQuorum,
 	governor *governor.ChainGovernor,
-	evmConnector connectors.Connector,
 	gk *ecdsa.PrivateKey,
 	guardianAddress ethcommon.Address,
 	rpcMap map[string]string,
@@ -84,7 +81,6 @@ func NewPrivService(
 		logger:          logger,
 		signedInC:       signedInC,
 		governor:        governor,
-		evmConnector:    evmConnector,
 		gk:              gk,
 		guardianAddress: guardianAddress,
 		rpcMap:          rpcMap,
@@ -187,7 +183,7 @@ func tokenBridgeRegisterChain(req *nodev1.BridgeRegisterChain, timestamp time.Ti
 // recoverChainId converts a nodev1.RecoverChainId message to its canonical VAA representation.
 // Returns an error if the data is invalid.
 func recoverChainId(req *nodev1.RecoverChainId, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	evm_chain_id_big := big.NewInt(0)
+	evm_chain_id_big := big.NewInt(0) //TBDel
 	evm_chain_id_big, ok := evm_chain_id_big.SetString(req.EvmChainId, 10)
 	if !ok {
 		return nil, errors.New("invalid evm_chain_id")
@@ -409,6 +405,7 @@ func gatewayCancelUpgrade(
 	return v, nil
 }
 
+// TBDel
 func gatewayIbcComposabilityMwSetContract(
 	req *nodev1.GatewayIbcComposabilityMwSetContract,
 	timestamp time.Time,
@@ -427,124 +424,6 @@ func gatewayIbcComposabilityMwSetContract(
 	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex, vaa.BodyGatewayIbcComposabilityMwContract{
 		ContractAddr: decodedAddr32,
 	}.Serialize())
-
-	return v, nil
-}
-
-// circleIntegrationUpdateWormholeFinality converts a nodev1.CircleIntegrationUpdateWormholeFinality to its canonical VAA representation
-// Returns an error if the data is invalid
-func circleIntegrationUpdateWormholeFinality(req *nodev1.CircleIntegrationUpdateWormholeFinality, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	if req.TargetChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid target chain id, must be <= %d", math.MaxUint16)
-	}
-	if req.Finality > math.MaxUint8 {
-		return nil, fmt.Errorf("invalid finality, must be <= %d", math.MaxUint8)
-	}
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyCircleIntegrationUpdateWormholeFinality{
-			TargetChainID: vaa.ChainID(req.TargetChainId),
-			Finality:      uint8(req.Finality),
-		}.Serialize())
-
-	return v, nil
-}
-
-// circleIntegrationRegisterEmitterAndDomain converts a nodev1.CircleIntegrationRegisterEmitterAndDomain to its canonical VAA representation
-// Returns an error if the data is invalid
-func circleIntegrationRegisterEmitterAndDomain(req *nodev1.CircleIntegrationRegisterEmitterAndDomain, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	if req.TargetChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid target chain id, must be <= %d", math.MaxUint16)
-	}
-	if req.ForeignEmitterChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid foreign emitter chain id, must be <= %d", math.MaxUint16)
-	}
-	b, err := hex.DecodeString(req.ForeignEmitterAddress)
-	if err != nil {
-		return nil, errors.New("invalid foreign emitter address encoding (expected hex)")
-	}
-
-	if len(b) != 32 {
-		return nil, errors.New("invalid foreign emitter address (expected 32 bytes)")
-	}
-
-	foreignEmitterAddress := vaa.Address{}
-	copy(foreignEmitterAddress[:], b)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyCircleIntegrationRegisterEmitterAndDomain{
-			TargetChainID:         vaa.ChainID(req.TargetChainId),
-			ForeignEmitterChainId: vaa.ChainID(req.ForeignEmitterChainId),
-			ForeignEmitterAddress: foreignEmitterAddress,
-			CircleDomain:          req.CircleDomain,
-		}.Serialize())
-
-	return v, nil
-}
-
-// circleIntegrationUpgradeContractImplementation converts a nodev1.CircleIntegrationUpgradeContractImplementation to its canonical VAA representation
-// Returns an error if the data is invalid
-func circleIntegrationUpgradeContractImplementation(req *nodev1.CircleIntegrationUpgradeContractImplementation, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
-	if req.TargetChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid target chain id, must be <= %d", math.MaxUint16)
-	}
-	b, err := hex.DecodeString(req.NewImplementationAddress)
-	if err != nil {
-		return nil, errors.New("invalid new implementation address encoding (expected hex)")
-	}
-
-	if len(b) != 32 {
-		return nil, errors.New("invalid new implementation address (expected 32 bytes)")
-	}
-
-	newImplementationAddress := vaa.Address{}
-	copy(newImplementationAddress[:], b)
-
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyCircleIntegrationUpgradeContractImplementation{
-			TargetChainID:            vaa.ChainID(req.TargetChainId),
-			NewImplementationAddress: newImplementationAddress,
-		}.Serialize())
-
-	return v, nil
-}
-
-func ibcUpdateChannelChain(
-	req *nodev1.IbcUpdateChannelChain,
-	timestamp time.Time,
-	guardianSetIndex uint32,
-	nonce uint32,
-	sequence uint64,
-) (*vaa.VAA, error) {
-	// validate parameters
-	if req.TargetChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid target chain id, must be <= %d", math.MaxUint16)
-	}
-
-	if req.ChainId > math.MaxUint16 {
-		return nil, fmt.Errorf("invalid chain id, must be <= %d", math.MaxUint16)
-	}
-
-	if len(req.ChannelId) > 64 {
-		return nil, fmt.Errorf("invalid channel ID length, must be <= 64")
-	}
-	channelId := vaa.LeftPadIbcChannelId(req.ChannelId)
-
-	var module string
-	if req.Module == nodev1.IbcUpdateChannelChainModule_IBC_UPDATE_CHANNEL_CHAIN_MODULE_RECEIVER {
-		module = vaa.IbcReceiverModuleStr
-	} else if req.Module == nodev1.IbcUpdateChannelChainModule_IBC_UPDATE_CHANNEL_CHAIN_MODULE_TRANSLATOR {
-		module = vaa.IbcTranslatorModuleStr
-	} else {
-		return nil, fmt.Errorf("unrecognized ibc update channel chain module")
-	}
-
-	// create governance VAA
-	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex,
-		vaa.BodyIbcUpdateChannelChain{
-			TargetChainId: vaa.ChainID(req.TargetChainId),
-			ChannelId:     channelId,
-			ChainId:       vaa.ChainID(req.ChainId),
-		}.Serialize(module))
 
 	return v, nil
 }
@@ -610,14 +489,6 @@ func GovMsgToVaa(message *nodev1.GovernanceMessage, currentSetIndex uint32, time
 		v, err = gatewayCancelUpgrade(timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	case *nodev1.GovernanceMessage_GatewayIbcComposabilityMwSetContract:
 		v, err = gatewayIbcComposabilityMwSetContract(payload.GatewayIbcComposabilityMwSetContract, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_CircleIntegrationUpdateWormholeFinality:
-		v, err = circleIntegrationUpdateWormholeFinality(payload.CircleIntegrationUpdateWormholeFinality, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_CircleIntegrationRegisterEmitterAndDomain:
-		v, err = circleIntegrationRegisterEmitterAndDomain(payload.CircleIntegrationRegisterEmitterAndDomain, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_CircleIntegrationUpgradeContractImplementation:
-		v, err = circleIntegrationUpgradeContractImplementation(payload.CircleIntegrationUpgradeContractImplementation, timestamp, currentSetIndex, message.Nonce, message.Sequence)
-	case *nodev1.GovernanceMessage_IbcUpdateChannelChain:
-		v, err = ibcUpdateChannelChain(payload.IbcUpdateChannelChain, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	case *nodev1.GovernanceMessage_WormholeRelayerSetDefaultDeliveryProvider:
 		v, err = wormholeRelayerSetDefaultDeliveryProvider(payload.WormholeRelayerSetDefaultDeliveryProvider, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	default:
@@ -903,19 +774,6 @@ func (s *nodePrivilegedService) ChainGovernorResetReleaseTimer(ctx context.Conte
 	}, nil
 }
 
-func (s *nodePrivilegedService) PurgePythNetVaas(ctx context.Context, req *nodev1.PurgePythNetVaasRequest) (*nodev1.PurgePythNetVaasResponse, error) {
-	prefix := db.VAAID{EmitterChain: vaa.ChainIDPythNet}
-	oldestTime := time.Now().Add(-time.Hour * 24 * time.Duration(req.DaysOld))
-	resp, err := s.db.PurgeVaas(prefix, oldestTime, req.LogOnly)
-	if err != nil {
-		return nil, err
-	}
-
-	return &nodev1.PurgePythNetVaasResponse{
-		Response: resp,
-	}, nil
-}
-
 func (s *nodePrivilegedService) SignExistingVAA(ctx context.Context, req *nodev1.SignExistingVAARequest) (*nodev1.SignExistingVAAResponse, error) {
 	v, err := vaa.Unmarshal(req.Vaa)
 	if err != nil {
@@ -926,10 +784,6 @@ func (s *nodePrivilegedService) SignExistingVAA(ctx context.Context, req *nodev1
 		return nil, errors.New("new guardian set index must be higher than provided VAA")
 	}
 
-	if s.evmConnector == nil {
-		return nil, errors.New("the node needs to have an Ethereum connection configured to sign existing VAAs")
-	}
-
 	var gs *common.GuardianSet
 	if cachedGs, exists := s.gsCache.Load(v.GuardianSetIndex); exists {
 		var ok bool
@@ -938,6 +792,7 @@ func (s *nodePrivilegedService) SignExistingVAA(ctx context.Context, req *nodev1
 			return nil, fmt.Errorf("internal error")
 		}
 	} else {
+		/* TBDel
 		evmGs, err := s.evmConnector.GetGuardianSet(ctx, v.GuardianSetIndex)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load guardian set [%d]: %w", v.GuardianSetIndex, err)
@@ -947,6 +802,7 @@ func (s *nodePrivilegedService) SignExistingVAA(ctx context.Context, req *nodev1
 			Index: v.GuardianSetIndex,
 		}
 		s.gsCache.Store(v.GuardianSetIndex, gs)
+		*/
 	}
 
 	if slices.Index(gs.Keys, s.guardianAddress) != -1 {
