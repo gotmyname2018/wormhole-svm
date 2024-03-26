@@ -2,7 +2,6 @@ package ccq
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
 	"net/http"
 
@@ -74,12 +73,6 @@ func validateRequest(logger *zap.Logger, env common.Environment, perms *Permissi
 		var status int
 		var err error
 		switch q := pcq.Query.(type) {
-		case *query.EthCallQueryRequest:
-			status, err = validateCallData(logger, permsForUser, "ethCall", pcq.ChainId, q.CallData)
-		case *query.EthCallByTimestampQueryRequest:
-			status, err = validateCallData(logger, permsForUser, "ethCallByTimestamp", pcq.ChainId, q.CallData)
-		case *query.EthCallWithFinalityQueryRequest:
-			status, err = validateCallData(logger, permsForUser, "ethCallWithFinality", pcq.ChainId, q.CallData)
 		case *query.SolanaAccountQueryRequest:
 			status, err = validateSolanaAccountQuery(logger, permsForUser, "solAccount", pcq.ChainId, q)
 		case *query.SolanaPdaQueryRequest:
@@ -98,34 +91,6 @@ func validateRequest(logger *zap.Logger, env common.Environment, perms *Permissi
 
 	logger.Debug("submitting query request", zap.String("userName", permsForUser.userName))
 	return http.StatusOK, &queryRequest, nil
-}
-
-// validateCallData performs verification on all of the call data objects in a query.
-func validateCallData(logger *zap.Logger, permsForUser *permissionEntry, callTag string, chainId vaa.ChainID, callData []*query.EthCallData) (int, error) {
-	for _, cd := range callData {
-		contractAddress, err := vaa.BytesToAddress(cd.To)
-		if err != nil {
-			logger.Debug("failed to parse contract address", zap.String("userName", permsForUser.userName), zap.String("contract", hex.EncodeToString(cd.To)), zap.Error(err))
-			invalidQueryRequestReceived.WithLabelValues("invalid_contract_address").Inc()
-			return http.StatusBadRequest, fmt.Errorf("failed to parse contract address: %w", err)
-		}
-		if len(cd.Data) < ETH_CALL_SIG_LENGTH {
-			logger.Debug("eth call data must be at least four bytes", zap.String("userName", permsForUser.userName), zap.String("data", hex.EncodeToString(cd.Data)))
-			invalidQueryRequestReceived.WithLabelValues("bad_call_data").Inc()
-			return http.StatusBadRequest, fmt.Errorf("eth call data must be at least four bytes")
-		}
-		call := hex.EncodeToString(cd.Data[0:ETH_CALL_SIG_LENGTH])
-		callKey := fmt.Sprintf("%s:%d:%s:%s", callTag, chainId, contractAddress, call)
-		if _, exists := permsForUser.allowedCalls[callKey]; !exists {
-			logger.Debug("requested call not authorized", zap.String("userName", permsForUser.userName), zap.String("callKey", callKey))
-			invalidQueryRequestReceived.WithLabelValues("call_not_authorized").Inc()
-			return http.StatusBadRequest, fmt.Errorf(`call "%s" not authorized`, callKey)
-		}
-
-		totalRequestedCallsByChain.WithLabelValues(chainId.String()).Inc()
-	}
-
-	return http.StatusOK, nil
 }
 
 // validateSolanaAccountQuery performs verification on a Solana sol_account query.

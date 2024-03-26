@@ -46,7 +46,7 @@ type (
 		pumpData    chan []byte
 		rpcClient   *rpc.Client
 		// Readiness component
-		readinessSync readiness.Component
+		readinessSync readiness.Component // TBDel
 		// VAA ChainID of the network we're connecting to.
 		chainID vaa.ChainID
 		// Human readable name of network
@@ -260,10 +260,9 @@ func (s *SolanaWatcher) SetupSubscription(ctx context.Context) (error, *websocke
 	return nil, ws
 }
 
+// TBDel
 func (s *SolanaWatcher) SetupWebSocket(ctx context.Context) error {
-	if s.chainID != vaa.ChainIDPythNet {
-		panic("unsupported chain id")
-	}
+	panic("unsupported chain id")
 
 	logger := supervisor.Logger(ctx)
 
@@ -856,17 +855,14 @@ func (s *SolanaWatcher) processMessageAccount(logger *zap.Logger, data []byte, a
 		}
 	}
 
-	// As of 2023-11-09, Pythnet has a bug which is not zeroing out these fields appropriately. This carve out should be removed after a fix is deployed.
-	if s.chainID != vaa.ChainIDPythNet {
-		// SECURITY: ensure these fields are zeroed out. in the legacy solana program they were always zero, and in the 2023 rewrite they are zeroed once the account is finalized
-		if !bytes.Equal(proposal.EmitterAuthority.Bytes(), emptyAddressBytes) || proposal.MessageStatus != 0 || !bytes.Equal(proposal.Gap[:], emptyGapBytes) {
-			solanaAccountSkips.WithLabelValues(s.networkName, "unfinalized_account").Inc()
-			logger.Error(
-				"account is not finalized",
-				zap.Stringer("account", acc),
-				zap.Binary("data", data))
-			return
-		}
+	// SECURITY: ensure these fields are zeroed out. in the legacy solana program they were always zero, and in the 2023 rewrite they are zeroed once the account is finalized
+	if !bytes.Equal(proposal.EmitterAuthority.Bytes(), emptyAddressBytes) || proposal.MessageStatus != 0 || !bytes.Equal(proposal.Gap[:], emptyGapBytes) {
+		solanaAccountSkips.WithLabelValues(s.networkName, "unfinalized_account").Inc()
+		logger.Error(
+			"account is not finalized",
+			zap.Stringer("account", acc),
+			zap.Binary("data", data))
+		return
 	}
 
 	var txHash eth_common.Hash

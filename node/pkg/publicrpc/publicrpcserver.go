@@ -70,11 +70,6 @@ func (s *PublicrpcServer) GetSignedVAA(ctx context.Context, req *publicrpcv1.Get
 
 	chainID := vaa.ChainID(req.MessageId.EmitterChain.Number())
 
-	// This interface is not supported for PythNet messages because those VAAs are not stored in the database.
-	if chainID == vaa.ChainIDPythNet {
-		return nil, status.Error(codes.InvalidArgument, "not supported for PythNet")
-	}
-
 	address, err := hex.DecodeString(req.MessageId.EmitterAddress)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("failed to decode address: %v", err))

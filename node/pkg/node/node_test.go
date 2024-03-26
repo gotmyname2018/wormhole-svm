@@ -186,13 +186,13 @@ func mockGuardianRunnable(t testing.TB, gs []*mockGuardian, mockGuardianIndex ui
 		// assemble all the options
 		guardianOptions := []*GuardianOption{
 			GuardianOptionDatabase(db),
-			GuardianOptionWatchers(watcherConfigs, nil),
+			GuardianOptionWatchers(watcherConfigs),
 			GuardianOptionGovernor(true),
 			GuardianOptionP2P(gs[mockGuardianIndex].p2pKey, networkID, bootstrapPeers, nodeName, false, cfg.p2pPort, "", 0, "", func() string { return "" }),
 			GuardianOptionPublicRpcSocket(cfg.publicSocket, publicRpcLogDetail),
 			GuardianOptionPublicrpcTcpService(cfg.publicRpc, publicRpcLogDetail),
 			GuardianOptionPublicWeb(cfg.publicWeb, cfg.publicSocket, "", false, ""),
-			GuardianOptionAdminService(cfg.adminSocket, nil, nil, rpcMap),
+			GuardianOptionAdminService(cfg.adminSocket, rpcMap),
 			GuardianOptionStatusServer(fmt.Sprintf("[::]:%d", cfg.statusPort)),
 			GuardianOptionProcessor(),
 		}
@@ -862,7 +862,7 @@ func TestWatcherConfigs(t *testing.T) {
 						ChainID:             vaa.ChainIDEthereum,
 						L1FinalizerRequired: "mock1",
 					},
-				}, nil),
+				}),
 			},
 			err: "",
 		},
@@ -878,7 +878,7 @@ func TestWatcherConfigs(t *testing.T) {
 						NetworkID: "mock",
 						ChainID:   vaa.ChainIDSolana,
 					},
-				}, nil),
+				}),
 			},
 			err: "NetworkID already configured: mock",
 		},
@@ -891,7 +891,7 @@ func TestWatcherConfigs(t *testing.T) {
 						ChainID:             vaa.ChainIDSolana,
 						L1FinalizerRequired: "something-that-does-not-exist",
 					},
-				}, nil),
+				}),
 			},
 			err: "L1finalizer does not exist. Please check the order of the watcher configurations in watcherConfigs.",
 		},
@@ -901,20 +901,6 @@ func TestWatcherConfigs(t *testing.T) {
 
 func TestGuardianConfigs(t *testing.T) {
 	tc := []testCaseGuardianConfig{
-		{
-			name: "unfulfilled-dependency",
-			opts: []*GuardianOption{
-				GuardianOptionAccountant(
-					"",    // websocket
-					"",    // contract
-					false, // enforcing
-					nil,   // wormchainConn
-					"",    // nttContract
-					nil,   // nttWormchainConn
-				),
-			},
-			err: "Check the order of your options.",
-		},
 		{
 			name: "double-configuration",
 			opts: []*GuardianOption{

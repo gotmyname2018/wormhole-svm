@@ -174,8 +174,7 @@ func GuardianOptionStatusServer(statusAddr string) *GuardianOption {
 		}}
 }
 
-// GuardianOptionWatchers configues all normal watchers and all IBC watchers. They need to be all configured at the same time because they may depend on each other.
-// TODO: currently, IBC watchers are partially statically configured in ibc.ChainConfig. It might make sense to refactor this to instead provide this as a parameter here.
+// GuardianOptionWatchers configues all normal watchers. They need to be all configured at the same time because they may depend on each other.
 // Dependencies: none
 func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig) *GuardianOption {
 	return &GuardianOption{
@@ -277,6 +276,7 @@ func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig) *GuardianOp
 				logger.Debug("Setting up watcher: " + watcherName)
 
 				if wc.GetNetworkID() != "solana-confirmed" { // TODO this should not be a special case, see comment in common/readiness.go
+					// TBDel
 					common.MustRegisterReadinessSyncing(wc.GetChainID())
 					chainObsvReqC[wc.GetChainID()] = make(chan *gossipv1.ObservationRequest, observationRequestPerChainBufferSize)
 					g.chainQueryReqC[wc.GetChainID()] = make(chan *query.PerChainQueryInternal, query.QueryRequestBufferSize)

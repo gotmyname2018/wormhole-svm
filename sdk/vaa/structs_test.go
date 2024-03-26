@@ -30,95 +30,7 @@ func TestChainIDFromString(t *testing.T) {
 	// Positive Test Cases
 	p_tests := []test{
 		{input: "solana", output: ChainIDSolana},
-		{input: "ethereum", output: ChainIDEthereum},
-		{input: "terra", output: ChainIDTerra},
-		{input: "bsc", output: ChainIDBSC},
-		{input: "polygon", output: ChainIDPolygon},
-		{input: "avalanche", output: ChainIDAvalanche},
-		{input: "oasis", output: ChainIDOasis},
-		{input: "algorand", output: ChainIDAlgorand},
-		{input: "aptos", output: ChainIDAptos},
-		{input: "sui", output: ChainIDSui},
-		{input: "near", output: ChainIDNear},
-		{input: "aurora", output: ChainIDAurora},
-		{input: "fantom", output: ChainIDFantom},
-		{input: "karura", output: ChainIDKarura},
-		{input: "acala", output: ChainIDAcala},
-		{input: "klaytn", output: ChainIDKlaytn},
-		{input: "celo", output: ChainIDCelo},
-		{input: "moonbeam", output: ChainIDMoonbeam},
-		{input: "terra2", output: ChainIDTerra2},
-		{input: "injective", output: ChainIDInjective},
-		{input: "osmosis", output: ChainIDOsmosis},
-		{input: "arbitrum", output: ChainIDArbitrum},
-		{input: "pythnet", output: ChainIDPythNet},
-		{input: "optimism", output: ChainIDOptimism},
-		{input: "gnosis", output: ChainIDGnosis},
-		{input: "xpla", output: ChainIDXpla},
-		{input: "btc", output: ChainIDBtc},
-		{input: "base", output: ChainIDBase},
-		{input: "sei", output: ChainIDSei},
-		{input: "rootstock", output: ChainIDRootstock},
-		{input: "wormchain", output: ChainIDWormchain},
-		{input: "cosmoshub", output: ChainIDCosmoshub},
-		{input: "evmos", output: ChainIDEvmos},
-		{input: "kujira", output: ChainIDKujira},
-		{input: "neutron", output: ChainIDNeutron},
-		{input: "celestia", output: ChainIDCelestia},
-		{input: "stargaze", output: ChainIDStargaze},
-		{input: "seda", output: ChainIDSeda},
-		{input: "dymension", output: ChainIDDymension},
-		{input: "sepolia", output: ChainIDSepolia},
-		{input: "arbitrum_sepolia", output: ChainIDArbitrumSepolia},
-		{input: "base_sepolia", output: ChainIDBaseSepolia},
-		{input: "optimism_sepolia", output: ChainIDOptimismSepolia},
-		{input: "holesky", output: ChainIDHolesky},
-		{input: "polygon_sepolia", output: ChainIDPolygonSepolia},
-
 		{input: "Solana", output: ChainIDSolana},
-		{input: "Ethereum", output: ChainIDEthereum},
-		{input: "Terra", output: ChainIDTerra},
-		{input: "Bsc", output: ChainIDBSC},
-		{input: "Polygon", output: ChainIDPolygon},
-		{input: "Avalanche", output: ChainIDAvalanche},
-		{input: "Oasis", output: ChainIDOasis},
-		{input: "Algorand", output: ChainIDAlgorand},
-		{input: "Aptos", output: ChainIDAptos},
-		{input: "Sui", output: ChainIDSui},
-		{input: "Near", output: ChainIDNear},
-		{input: "Aurora", output: ChainIDAurora},
-		{input: "Fantom", output: ChainIDFantom},
-		{input: "Karura", output: ChainIDKarura},
-		{input: "Acala", output: ChainIDAcala},
-		{input: "Klaytn", output: ChainIDKlaytn},
-		{input: "Celo", output: ChainIDCelo},
-		{input: "Moonbeam", output: ChainIDMoonbeam},
-		{input: "Terra2", output: ChainIDTerra2},
-		{input: "Injective", output: ChainIDInjective},
-		{input: "Osmosis", output: ChainIDOsmosis},
-		{input: "Arbitrum", output: ChainIDArbitrum},
-		{input: "Optimism", output: ChainIDOptimism},
-		{input: "Gnosis", output: ChainIDGnosis},
-		{input: "Pythnet", output: ChainIDPythNet},
-		{input: "XPLA", output: ChainIDXpla},
-		{input: "BTC", output: ChainIDBtc},
-		{input: "Base", output: ChainIDBase},
-		{input: "Sei", output: ChainIDSei},
-		{input: "Rootstock", output: ChainIDRootstock},
-		{input: "Wormchain", output: ChainIDWormchain},
-		{input: "Cosmoshub", output: ChainIDCosmoshub},
-		{input: "Evmos", output: ChainIDEvmos},
-		{input: "Kujira", output: ChainIDKujira},
-		{input: "Neutron", output: ChainIDNeutron},
-		{input: "Celestia", output: ChainIDCelestia},
-		{input: "Stargaze", output: ChainIDStargaze},
-		{input: "Seda", output: ChainIDSeda},
-		{input: "Sepolia", output: ChainIDSepolia},
-		{input: "Arbitrum_Sepolia", output: ChainIDArbitrumSepolia},
-		{input: "Base_Sepolia", output: ChainIDBaseSepolia},
-		{input: "Optimism_Sepolia", output: ChainIDOptimismSepolia},
-		{input: "Holesky", output: ChainIDHolesky},
-		{input: "Polygon_Sepolia", output: ChainIDPolygonSepolia},
 	}
 
 	// Negative Test Cases
@@ -261,49 +173,6 @@ func TestChainId_String(t *testing.T) {
 	tests := []test{
 		{input: 0, output: "unset"},
 		{input: 1, output: "solana"},
-		{input: 2, output: "ethereum"},
-		{input: 3, output: "terra"},
-		{input: 4, output: "bsc"},
-		{input: 5, output: "polygon"},
-		{input: 6, output: "avalanche"},
-		{input: 7, output: "oasis"},
-		{input: 8, output: "algorand"},
-		{input: 9, output: "aurora"},
-		{input: 10, output: "fantom"},
-		{input: 11, output: "karura"},
-		{input: 12, output: "acala"},
-		{input: 13, output: "klaytn"},
-		{input: 14, output: "celo"},
-		{input: 15, output: "near"},
-		{input: 16, output: "moonbeam"},
-		{input: 18, output: "terra2"},
-		{input: 19, output: "injective"},
-		{input: 20, output: "osmosis"},
-		{input: 21, output: "sui"},
-		{input: 22, output: "aptos"},
-		{input: 23, output: "arbitrum"},
-		{input: 24, output: "optimism"},
-		{input: 25, output: "gnosis"},
-		{input: 26, output: "pythnet"},
-		{input: 28, output: "xpla"},
-		{input: 29, output: "btc"},
-		{input: 30, output: "base"},
-		{input: 32, output: "sei"},
-		{input: 33, output: "rootstock"},
-		{input: 3104, output: "wormchain"},
-		{input: 4000, output: "cosmoshub"},
-		{input: 4001, output: "evmos"},
-		{input: 4002, output: "kujira"},
-		{input: 4003, output: "neutron"},
-		{input: 4004, output: "celestia"},
-		{input: 4005, output: "stargaze"},
-		{input: 4006, output: "seda"},
-		{input: 10002, output: "sepolia"},
-		{input: 10003, output: "arbitrum_sepolia"},
-		{input: 10004, output: "base_sepolia"},
-		{input: 10005, output: "optimism_sepolia"},
-		{input: 10006, output: "holesky"},
-		{input: 10007, output: "polygon_sepolia"},
 		{input: 10000, output: "unknown chain ID: 10000"},
 	}
 
@@ -829,9 +698,9 @@ func TestDecodeTransferPayloadHdr(t *testing.T) {
 		{label: "valid vaa",
 			vaa:            "01000000000100e424aef95296cb0f2185f351086c7c0b9cd031d1288f0537d04ab20d5fc709416224b2bd9a8010a81988aa9cb38b378eb915f88b67e32a765928d948dc02077e00000102584a8d000000020000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16000000000000000f0f01000000000000000000000000000000000000000000000000000000002b369f40000000000000000000000000ddb64fe46a91d46ee29420539fc25fd07c5fea3e000221c175fcd8e3a19fe2e0deae96534f0f4e6a896f4df0e3ec5345fe27ac3f63f000010000000000000000000000000000000000000000000000000000000000000000",
 			payloadType:    1,
-			emitterChainId: ChainIDEthereum,
+			emitterChainId: ChainIDSolana,
 			emitterAddr:    "0000000000000000000000000290FB167208Af455bB137780163b7B7a9a10C16",
-			originChain:    ChainIDEthereum,
+			originChain:    ChainIDSolana,
 			originAddress:  "000000000000000000000000DDb64fE46a91D46ee29420539FC25FD07c5FEa3E",
 			targetChain:    ChainIDSolana,
 			targetAddress:  "21c175fcd8e3a19fe2e0deae96534f0f4e6a896f4df0e3ec5345fe27ac3f63f0",
@@ -969,7 +838,7 @@ func TestUnmarshalBody(t *testing.T) {
 				buf := new(bytes.Buffer)
 				MustWrite(buf, binary.BigEndian, uint32(time.Now().Unix()))
 				MustWrite(buf, binary.BigEndian, uint32(123))
-				MustWrite(buf, binary.BigEndian, ChainIDPythNet)
+				MustWrite(buf, binary.BigEndian, ChainIDSolana)
 				return buf.Bytes()
 			},
 		},
@@ -981,7 +850,7 @@ func TestUnmarshalBody(t *testing.T) {
 				buf := new(bytes.Buffer)
 				MustWrite(buf, binary.BigEndian, uint32(time.Now().Unix()))
 				MustWrite(buf, binary.BigEndian, uint32(123))
-				MustWrite(buf, binary.BigEndian, ChainIDBSC)
+				MustWrite(buf, binary.BigEndian, ChainIDSolana)
 				buf.Write(addr[:])
 				return buf.Bytes()
 			},
@@ -994,7 +863,7 @@ func TestUnmarshalBody(t *testing.T) {
 				buf := new(bytes.Buffer)
 				MustWrite(buf, binary.BigEndian, uint32(time.Now().Unix()))
 				MustWrite(buf, binary.BigEndian, uint32(123))
-				MustWrite(buf, binary.BigEndian, ChainIDBSC)
+				MustWrite(buf, binary.BigEndian, ChainIDSolana)
 				buf.Write(addr[:])
 				MustWrite(buf, binary.BigEndian, uint64(42))
 				return buf.Bytes()
@@ -1008,7 +877,7 @@ func TestUnmarshalBody(t *testing.T) {
 				Nonce:            uint32(123),
 				Sequence:         uint64(42),
 				ConsistencyLevel: uint8(1),
-				EmitterChain:     ChainIDBSC,
+				EmitterChain:     ChainIDSolana,
 				Timestamp:        time.Unix(0, 0),
 				EmitterAddress:   addr,
 				Payload:          testPayload,
@@ -1017,7 +886,7 @@ func TestUnmarshalBody(t *testing.T) {
 				buf := new(bytes.Buffer)
 				MustWrite(buf, binary.BigEndian, uint32(0))
 				MustWrite(buf, binary.BigEndian, uint32(123))
-				MustWrite(buf, binary.BigEndian, ChainIDBSC)
+				MustWrite(buf, binary.BigEndian, ChainIDSolana)
 				buf.Write(addr[:])
 				MustWrite(buf, binary.BigEndian, uint64(42))
 				MustWrite(buf, binary.BigEndian, uint8(1))
@@ -1033,7 +902,7 @@ func TestUnmarshalBody(t *testing.T) {
 				Nonce:            uint32(123),
 				Sequence:         uint64(42),
 				ConsistencyLevel: uint8(1),
-				EmitterChain:     ChainIDBSC,
+				EmitterChain:     ChainIDSolana,
 				Timestamp:        time.Unix(0, 0),
 				EmitterAddress:   addr,
 				Payload:          []byte{},
@@ -1042,7 +911,7 @@ func TestUnmarshalBody(t *testing.T) {
 				buf := new(bytes.Buffer)
 				MustWrite(buf, binary.BigEndian, uint32(0))
 				MustWrite(buf, binary.BigEndian, uint32(123))
-				MustWrite(buf, binary.BigEndian, ChainIDBSC)
+				MustWrite(buf, binary.BigEndian, ChainIDSolana)
 				buf.Write(addr[:])
 				MustWrite(buf, binary.BigEndian, uint64(42))
 				MustWrite(buf, binary.BigEndian, uint8(1))

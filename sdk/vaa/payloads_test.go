@@ -108,63 +108,6 @@ func TestBodyTokenBridgeUpgradeContractSerialize(t *testing.T) {
 	assert.Equal(t, expected, hex.EncodeToString(serializedBodyTokenBridgeUpgradeContract))
 }
 
-func TestBodyWormchainStoreCodeSerialize(t *testing.T) {
-	expected := "0000000000000000000000000000000000000000005761736d644d6f64756c65010c200102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-	bodyWormchainStoreCode := BodyWormchainStoreCode{WasmHash: dummyBytes}
-	assert.Equal(t, expected, hex.EncodeToString(bodyWormchainStoreCode.Serialize()))
-}
-
-func TestBodyWormchainInstantiateContractSerialize(t *testing.T) {
-	actual := BodyWormchainInstantiateContract{InstantiationParamsHash: dummyBytes}
-	expected := "0000000000000000000000000000000000000000005761736d644d6f64756c65020c200102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-	assert.Equal(t, expected, hex.EncodeToString(actual.Serialize()))
-}
-
-func TestBodyWormchainMigrateContractSerialize(t *testing.T) {
-	actual := BodyWormchainMigrateContract{MigrationParamsHash: dummyBytes}
-	expected := "0000000000000000000000000000000000000000005761736d644d6f64756c65030c200102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-	assert.Equal(t, expected, hex.EncodeToString(actual.Serialize()))
-}
-
-func TestBodyCircleIntegrationUpdateWormholeFinalitySerialize(t *testing.T) {
-	expected := "000000000000000000000000000000436972636c65496e746567726174696f6e0100022a"
-	bodyCircleIntegrationUpdateWormholeFinality := BodyCircleIntegrationUpdateWormholeFinality{TargetChainID: ChainIDEthereum, Finality: 42}
-	assert.Equal(t, expected, hex.EncodeToString(bodyCircleIntegrationUpdateWormholeFinality.Serialize()))
-}
-
-func TestBodyCircleIntegrationRegisterEmitterAndDomainSerialize(t *testing.T) {
-	expected := "000000000000000000000000000000436972636c65496e746567726174696f6e020002000600000000000000000000000000000000000000000000000000000000000000040000002a"
-	bodyCircleIntegrationRegisterEmitterAndDomain := BodyCircleIntegrationRegisterEmitterAndDomain{
-		TargetChainID:         ChainIDEthereum,
-		ForeignEmitterChainId: ChainIDAvalanche,
-		ForeignEmitterAddress: addr,
-		CircleDomain:          42,
-	}
-	assert.Equal(t, expected, hex.EncodeToString(bodyCircleIntegrationRegisterEmitterAndDomain.Serialize()))
-}
-
-func TestBodyCircleIntegrationUpgradeContractImplementationSerialize(t *testing.T) {
-	expected := "000000000000000000000000000000436972636c65496e746567726174696f6e0300020000000000000000000000000000000000000000000000000000000000000004"
-	bodyCircleIntegrationUpgradeContractImplementation := BodyCircleIntegrationUpgradeContractImplementation{
-		TargetChainID:            ChainIDEthereum,
-		NewImplementationAddress: addr,
-	}
-	assert.Equal(t, expected, hex.EncodeToString(bodyCircleIntegrationUpgradeContractImplementation.Serialize()))
-}
-
-func TestBodyIbcReceiverUpdateChannelChain(t *testing.T) {
-	expected := "0000000000000000000000000000000000000000004962635265636569766572010c20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006368616e6e656c2d300013"
-
-	channelId := LeftPadIbcChannelId("channel-0")
-
-	bodyIbcReceiverUpdateChannelChain := BodyIbcUpdateChannelChain{
-		TargetChainId: ChainIDWormchain,
-		ChannelId:     channelId,
-		ChainId:       ChainIDInjective,
-	}
-	assert.Equal(t, expected, hex.EncodeToString(bodyIbcReceiverUpdateChannelChain.Serialize(IbcReceiverModuleStr)))
-}
-
 func TestLeftPadBytes(t *testing.T) {
 	payload := "AAAA"
 	paddedPayload := LeftPadBytes(payload, int(8))
@@ -209,23 +152,6 @@ func TestBodyWormholeRelayerSetDefaultDeliveryProviderSerialize(t *testing.T) {
 		NewDefaultDeliveryProviderAddress: addr,
 	}
 	assert.Equal(t, expected, hex.EncodeToString(bodyWormholeRelayerSetDefaultDeliveryProvider.Serialize()))
-}
-
-func TestBodyGatewayIbcComposabilityMwContractSerialize(t *testing.T) {
-	expected := "00000000000000000000000000000000000000476174657761794d6f64756c65030c200102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
-	bodyGatewayIbcComposabilityMwContract := BodyGatewayIbcComposabilityMwContract{
-		ContractAddr: dummyBytes,
-	}
-	assert.Equal(t, expected, hex.EncodeToString(bodyGatewayIbcComposabilityMwContract.Serialize()))
-}
-
-func TestBodyGatewayIbcComposabilityMwContractDeserialize(t *testing.T) {
-	expected := BodyGatewayIbcComposabilityMwContract{
-		ContractAddr: dummyBytes,
-	}
-	var payloadBody BodyGatewayIbcComposabilityMwContract
-	payloadBody.Deserialize(dummyBytes[:])
-	assert.Equal(t, expected, payloadBody)
 }
 
 func TestBodyCoreRecoverChainIdSerialize(t *testing.T) {

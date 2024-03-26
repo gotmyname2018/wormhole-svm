@@ -102,30 +102,7 @@ type (
 // perChainConfig provides static config info for each chain. If a chain is not listed here, then it does not support queries.
 // Every chain listed here must have at least one worker specified.
 var perChainConfig = map[vaa.ChainID]PerChainConfig{
-	vaa.ChainIDSolana:          {NumWorkers: 10, TimestampCacheSupported: false},
-	vaa.ChainIDEthereum:        {NumWorkers: 5, TimestampCacheSupported: true},
-	vaa.ChainIDBSC:             {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDPolygon:         {NumWorkers: 5, TimestampCacheSupported: true},
-	vaa.ChainIDAvalanche:       {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDOasis:           {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDAurora:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDFantom:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDKarura:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDAcala:           {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDKlaytn:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDCelo:            {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDMoonbeam:        {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDArbitrum:        {NumWorkers: 5, TimestampCacheSupported: true},
-	vaa.ChainIDOptimism:        {NumWorkers: 5, TimestampCacheSupported: true},
-	vaa.ChainIDBase:            {NumWorkers: 5, TimestampCacheSupported: true},
-	vaa.ChainIDScroll:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDMantle:          {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDSepolia:         {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDHolesky:         {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDArbitrumSepolia: {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDBaseSepolia:     {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDOptimismSepolia: {NumWorkers: 1, TimestampCacheSupported: true},
-	vaa.ChainIDPolygonSepolia:  {NumWorkers: 1, TimestampCacheSupported: true},
+	vaa.ChainIDSolana: {NumWorkers: 10, TimestampCacheSupported: false},
 }
 
 // GetPerChainConfig returns the config for the specified chain. If the chain is not configured it returns an empty struct,

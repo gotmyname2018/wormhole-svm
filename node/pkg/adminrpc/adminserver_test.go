@@ -135,10 +135,6 @@ func TestSignExistingVAA_DuplicateGuardian(t *testing.T) {
 func TestSignExistingVAA_AlreadyGuardian(t *testing.T) {
 	gsKeys, gsAddrs := generateGS(5)
 	s := setupAdminServerForVAASigning(0, gsAddrs)
-	s.evmConnector = mockEVMConnector{
-		guardianAddrs:    append(gsAddrs, s.guardianAddress),
-		guardianSetIndex: 0,
-	}
 
 	v := generateMockVAA(0, append(gsKeys, s.gk))
 

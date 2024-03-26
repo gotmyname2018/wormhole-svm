@@ -460,9 +460,7 @@ func (gov *ChainGovernor) parseMsgAlreadyLocked(msg *common.MessagePublication) 
 	// If we don't care about this chain, the VAA can be published.
 	ce, exists := gov.chains[msg.EmitterChain]
 	if !exists {
-		if msg.EmitterChain != vaa.ChainIDPythNet {
-			gov.logger.Info("ignoring vaa because the emitter chain is not configured", zap.String("msgID", msg.MessageIDString()))
-		}
+		gov.logger.Info("ignoring vaa because the emitter chain is not configured", zap.String("msgID", msg.MessageIDString()))
 		return false, nil, nil, nil, nil
 	}
 

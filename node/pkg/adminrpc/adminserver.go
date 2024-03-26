@@ -178,6 +178,7 @@ func tokenBridgeRegisterChain(req *nodev1.BridgeRegisterChain, timestamp time.Ti
 	return v, nil
 }
 
+// TBDel
 // recoverChainId converts a nodev1.RecoverChainId message to its canonical VAA representation.
 // Returns an error if the data is invalid.
 func recoverChainId(req *nodev1.RecoverChainId, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
