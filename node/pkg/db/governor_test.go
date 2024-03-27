@@ -29,21 +29,18 @@ func TestSerializeAndDeserializeOfTransfer(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -61,7 +58,7 @@ func TestSerializeAndDeserializeOfTransfer(t *testing.T) {
 }
 
 func TestPendingMsgID(t *testing.T) {
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	msg1 := &common.MessagePublication{
@@ -69,8 +66,8 @@ func TestPendingMsgID(t *testing.T) {
 		Timestamp:        time.Unix(int64(1654516425), 0),
 		Nonce:            123456,
 		Sequence:         789101112131415,
-		EmitterChain:     vaa.ChainIDEthereum,
-		EmitterAddress:   ethereumTokenBridgeAddr,
+		EmitterChain:     vaa.ChainIDSolana,
+		EmitterAddress:   solanaTokenBridgeAddr,
 		Payload:          []byte{},
 		ConsistencyLevel: 16,
 	}
@@ -82,21 +79,18 @@ func TestTransferMsgID(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -162,21 +156,18 @@ func TestStoreTransfer(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -196,21 +187,18 @@ func TestDeleteTransfer(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -244,7 +232,7 @@ func TestStorePendingMsg(t *testing.T) {
 		Timestamp:        time.Unix(int64(1654516425), 0),
 		Nonce:            123456,
 		Sequence:         789101112131415,
-		EmitterChain:     vaa.ChainIDEthereum,
+		EmitterChain:     vaa.ChainIDSolana,
 		EmitterAddress:   tokenBridgeAddr,
 		Payload:          []byte{},
 		ConsistencyLevel: 16,
@@ -272,7 +260,7 @@ func TestDeletePendingMsg(t *testing.T) {
 		Timestamp:        time.Unix(int64(1654516425), 0),
 		Nonce:            123456,
 		Sequence:         789101112131415,
-		EmitterChain:     vaa.ChainIDEthereum,
+		EmitterChain:     vaa.ChainIDSolana,
 		EmitterAddress:   tokenBridgeAddr,
 		Payload:          []byte{},
 		ConsistencyLevel: 16,
@@ -302,7 +290,7 @@ func TestSerializeAndDeserializeOfPendingTransfer(t *testing.T) {
 		Timestamp:        time.Unix(int64(1654516425), 0),
 		Nonce:            123456,
 		Sequence:         789101112131415,
-		EmitterChain:     vaa.ChainIDEthereum,
+		EmitterChain:     vaa.ChainIDSolana,
 		EmitterAddress:   tokenBridgeAddr,
 		Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		ConsistencyLevel: 16,
@@ -335,10 +323,7 @@ func TestStoreAndReloadTransfers(t *testing.T) {
 	defer db.Close()
 	defer os.Remove(dbPath)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
@@ -347,12 +332,12 @@ func TestStoreAndReloadTransfers(t *testing.T) {
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -363,12 +348,12 @@ func TestStoreAndReloadTransfers(t *testing.T) {
 	xfer2 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516430), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131416",
 		Hash:           "Hash2",
 	}
@@ -383,8 +368,8 @@ func TestStoreAndReloadTransfers(t *testing.T) {
 			Timestamp:        time.Unix(int64(1654516435), 0),
 			Nonce:            123456,
 			Sequence:         789101112131417,
-			EmitterChain:     vaa.ChainIDEthereum,
-			EmitterAddress:   ethereumTokenBridgeAddr,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   solanaTokenBridgeAddr,
 			Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			ConsistencyLevel: 16,
 		},
@@ -400,8 +385,8 @@ func TestStoreAndReloadTransfers(t *testing.T) {
 			Timestamp:        time.Unix(int64(1654516440), 0),
 			Nonce:            123456,
 			Sequence:         789101112131418,
-			EmitterChain:     vaa.ChainIDEthereum,
-			EmitterAddress:   ethereumTokenBridgeAddr,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   solanaTokenBridgeAddr,
 			Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			ConsistencyLevel: 16,
 		},
@@ -427,21 +412,18 @@ func TestMarshalUnmarshalNoMsgIdOrHash(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		// Don't set MsgID or Hash, should handle empty slices.
 	}
 
@@ -459,21 +441,18 @@ func TestUnmarshalTransferFailures(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:           "Hash1",
 	}
@@ -546,7 +525,7 @@ func TestUnmarshalPendingTransferFailures(t *testing.T) {
 		Timestamp:        time.Unix(int64(1654516425), 0),
 		Nonce:            123456,
 		Sequence:         789101112131415,
-		EmitterChain:     vaa.ChainIDEthereum,
+		EmitterChain:     vaa.ChainIDSolana,
 		EmitterAddress:   tokenBridgeAddr,
 		Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		ConsistencyLevel: 16,
@@ -624,10 +603,7 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 	defer db.Close()
 	defer os.Remove(dbPath)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
@@ -636,10 +612,10 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 	oldXfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
 		// Don't set TargetChain or TargetAddress.
 		MsgID: "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:  "Hash1",
@@ -651,12 +627,12 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 	newXfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516426), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131416",
 		Hash:           "Hash1",
 	}
@@ -667,10 +643,10 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 	oldXfer2 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516427), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
 		// Don't set TargetChain or TargetAddress.
 		MsgID: "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131417",
 		Hash:  "Hash2",
@@ -682,12 +658,12 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 	newXfer2 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516428), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131418",
 		Hash:           "Hash2",
 	}
@@ -705,8 +681,8 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 			Timestamp:        now,
 			Nonce:            123456,
 			Sequence:         789101112131417,
-			EmitterChain:     vaa.ChainIDEthereum,
-			EmitterAddress:   ethereumTokenBridgeAddr,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   solanaTokenBridgeAddr,
 			Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			ConsistencyLevel: 16,
 			// IsReobservation will not be serialized. It should be set to false on reload.
@@ -726,8 +702,8 @@ func TestLoadingOldPendingTransfers(t *testing.T) {
 			Timestamp:        now2,
 			Nonce:            123456,
 			Sequence:         789101112131418,
-			EmitterChain:     vaa.ChainIDEthereum,
-			EmitterAddress:   ethereumTokenBridgeAddr,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   solanaTokenBridgeAddr,
 			Payload:          []byte{4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			ConsistencyLevel: 16,
 			IsReobservation:  true,
@@ -818,16 +794,16 @@ func TestDeserializeOfOldTransfer(t *testing.T) {
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
 	require.NoError(t, err)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
 		// Don't set TargetChain or TargetAddress.
 		MsgID: "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		Hash:  "Hash1",
@@ -853,10 +829,7 @@ func TestOldTransfersUpdatedWhenReloading(t *testing.T) {
 	defer db.Close()
 	defer os.Remove(dbPath)
 
-	ethereumTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
-	require.NoError(t, err)
-
-	bscTokenBridgeAddr, err := vaa.StringToAddress("0x26b4afb60d6c903165150c6f0aa14f8016be4aec")
+	solanaTokenBridgeAddr, err := vaa.StringToAddress("0x0290fb167208af455bb137780163b7b7a9a10c16")
 	require.NoError(t, err)
 
 	tokenAddr, err := vaa.StringToAddress("0x707f9118e33a9b8998bea41dd0d46f38bb963fc8")
@@ -866,10 +839,10 @@ func TestOldTransfersUpdatedWhenReloading(t *testing.T) {
 	xfer1 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516425), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
 		// Don't set TargetChain or TargetAddress.
 		MsgID: "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131415",
 		// Do not set the Hash.
@@ -882,12 +855,12 @@ func TestOldTransfersUpdatedWhenReloading(t *testing.T) {
 	xfer2 := &Transfer{
 		Timestamp:      time.Unix(int64(1654516430), 0),
 		Value:          125000,
-		OriginChain:    vaa.ChainIDEthereum,
+		OriginChain:    vaa.ChainIDSolana,
 		OriginAddress:  tokenAddr,
-		EmitterChain:   vaa.ChainIDEthereum,
-		EmitterAddress: ethereumTokenBridgeAddr,
-		TargetChain:    vaa.ChainIDBSC,
-		TargetAddress:  bscTokenBridgeAddr,
+		EmitterChain:   vaa.ChainIDSolana,
+		EmitterAddress: solanaTokenBridgeAddr,
+		TargetChain:    vaa.ChainIDSolana,
+		TargetAddress:  solanaTokenBridgeAddr,
 		MsgID:          "2/0000000000000000000000000290fb167208af455bb137780163b7b7a9a10c16/789101112131416",
 		Hash:           "Hash2",
 	}

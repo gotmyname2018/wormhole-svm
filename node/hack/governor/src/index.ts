@@ -1,15 +1,7 @@
 import {
   tryNativeToHexString,
   ChainId,
-  CHAIN_ID_ALGORAND,
-  CHAIN_ID_APTOS,
-  CHAIN_ID_SUI,
-  CONTRACTS,
-  getOriginalAssetSui,
 } from "@certusone/wormhole-sdk";
-
-import { Connection, JsonRpcProvider } from "@mysten/sui.js";
-import { arrayify, zeroPad } from "ethers/lib/utils";
 
 const MinNotional = 0;
 // Price change tolerance in %. Fallback to 30%
@@ -36,19 +28,6 @@ if (fs.existsSync(IncludeFileName)) {
     }
   }
 }
-
-/*
-  "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn": {
-    "Symbol": "KURO",
-    "Name": "Kurobi",
-    "Address": "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn",
-    "CoinGeckoId": "kurobi",
-    "Amount": 200,
-    "Notional": 1.39,
-    "TokenPrice": 0.00694548,
-    "TokenDecimals": 6
-  },
-*/
 
 // Get the existing token list to check for any extreme price changes and removed tokens
 var existingTokenPrices = {};
@@ -113,53 +92,19 @@ axios
             includedTokens.delete(key);
             let chainId = parseInt(chain) as ChainId;
             let wormholeAddr: string;
-            if (chainId == CHAIN_ID_ALGORAND) {
-              if (
-                data.Symbol.toLowerCase() === "algo" ||
-                data.Address === "0"
-              ) {
-                wormholeAddr =
-                  "0000000000000000000000000000000000000000000000000000000000000000";
-              } else {
-                // For Algorand, the address field is actually the asset ID so we can't do the usual tryNativeToHexString. Just convert it to hex and left pad with zeros.
-                wormholeAddr = Buffer.from(
-                  zeroPad(arrayify(Number.parseInt(data.Address)), 32)
-                ).toString("hex");
-              }
-            } else {
-              try {
-                wormholeAddr = tryNativeToHexString(data.Address, chainId);
-              } catch (e) {
-                if (chainId == CHAIN_ID_SUI) {
-                  // For Sui we look up the symbol from the RPC.
-                  await (async () => {
-                    const provider = new JsonRpcProvider(
-                      new Connection({
-                        // fullnode: "https://fullnode.mainnet.sui.io",
-                        fullnode: "https://sui-mainnet-rpc.allthatnode.com",
-                      })
-                    );
-                    const result = await getOriginalAssetSui(
-                      provider,
-                      CONTRACTS.MAINNET.sui.token_bridge,
-                      data.Address
-                    );
-                    wormholeAddr = Buffer.from(result.assetAddress).toString(
-                      "hex"
-                    );
-                  })();
-                }
-                if (wormholeAddr === undefined) {
-                  console.log(
-                    `Ignoring symbol '${data.Symbol}' on chain ${chainId} because the address '${data.Address}' is undefined`
-                  );
-                  continue;
-                } else if (wormholeAddr === "") {
-                  console.log(
-                    `Ignoring symbol '${data.Symbol}' on chain ${chainId} because the address '${data.Address}' is invalid`
-                  );
-                  continue;
-                }
+            try {
+              wormholeAddr = tryNativeToHexString(data.Address, chainId);
+            } catch (e) {
+              if (wormholeAddr === undefined) {
+                console.log(
+                  `Ignoring symbol '${data.Symbol}' on chain ${chainId} because the address '${data.Address}' is undefined`
+                );
+                continue;
+              } else if (wormholeAddr === "") {
+                console.log(
+                  `Ignoring symbol '${data.Symbol}' on chain ${chainId} because the address '${data.Address}' is invalid`
+                );
+                continue;
               }
             }
 

@@ -58,7 +58,7 @@ func countVAAs(d *Database, chainId vaa.ChainID) (numThisChain int, numOtherChai
 	return
 }
 
-func TestPurgingPythnetVAAs(t *testing.T) {
+func TestPurgingSolanaVAAs(t *testing.T) {
 	var payload = []byte{97, 97, 97, 97, 97, 97}
 	var emitterAddress = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4}
 
@@ -72,26 +72,10 @@ func TestPurgingPythnetVAAs(t *testing.T) {
 
 	now := time.Now()
 
-	// Create 50 VAAs each for Pythnet and Solana that are more than three days old.
+	// Create 50 VAAs each for Solana that are more than three days old.
 	timeStamp := now.Add(-time.Hour * time.Duration(3*24+1))
-	pythnetSeqNum := uint64(10000)
-	solanaSeqNum := uint64(20000)
+	solanaSeqNum := uint64(10000)
 	for count := 0; count < 50; count++ {
-		err = storeVAA(db, &vaa.VAA{
-			Version:          uint8(1),
-			GuardianSetIndex: uint32(1),
-			Signatures:       nil,
-			Timestamp:        timeStamp,
-			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
-			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   emitterAddress,
-			Payload:          payload,
-		})
-		require.NoError(t, err)
-		pythnetSeqNum++
-
 		err = storeVAA(db, &vaa.VAA{
 			Version:          uint8(1),
 			GuardianSetIndex: uint32(1),
@@ -108,24 +92,9 @@ func TestPurgingPythnetVAAs(t *testing.T) {
 		solanaSeqNum++
 	}
 
-	// Create 75 VAAs each for Pythnet and Solana that are less than three days old.
+	// Create 75 VAAs each for Solana that are less than three days old.
 	timeStamp = now.Add(-time.Hour * time.Duration(3*24-1))
 	for count := 0; count < 75; count++ {
-		err = storeVAA(db, &vaa.VAA{
-			Version:          uint8(1),
-			GuardianSetIndex: uint32(1),
-			Signatures:       nil,
-			Timestamp:        timeStamp,
-			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
-			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   emitterAddress,
-			Payload:          payload,
-		})
-		require.NoError(t, err)
-		pythnetSeqNum++
-
 		err = storeVAA(db, &vaa.VAA{
 			Version:          uint8(1),
 			GuardianSetIndex: uint32(1),
@@ -143,29 +112,27 @@ func TestPurgingPythnetVAAs(t *testing.T) {
 	}
 
 	// Before we do the purge, make sure the database contains what we expect.
-	numPythnet, numOther, err := countVAAs(db, vaa.ChainIDPythNet)
+	numSolana, numOther, err := countVAAs(db, vaa.ChainIDSolana)
 	require.NoError(t, err)
-	assert.Equal(t, 125, numPythnet)
+	assert.Equal(t, 125, numSolana)
 	assert.Equal(t, 125, numOther)
 
-	// Purge PythNet VAAs that are more than three days old.
+	// Purge Solana VAAs that are more than three days old.
 	oldestTime := now.Add(-time.Hour * time.Duration(3*24))
-	prefix := VAAID{EmitterChain: vaa.ChainIDPythNet}
+	prefix := VAAID{EmitterChain: vaa.ChainIDSolana}
 	_, err = db.PurgeVaas(prefix, oldestTime, false)
 	require.NoError(t, err)
 
-	// Make sure we deleted the old PythNet VAAs but didn't touch the Solana ones.
-	numPythnet, numOther, err = countVAAs(db, vaa.ChainIDPythNet)
+	// Make sure we deleted the old Solana VAAs.
+	numSolana, _, err = countVAAs(db, vaa.ChainIDSolana)
 	require.NoError(t, err)
-	assert.Equal(t, 75, numPythnet)
-	assert.Equal(t, 125, numOther)
+	assert.Equal(t, 75, numSolana)
 }
 
 func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 	var payload = []byte{97, 97, 97, 97, 97, 97}
-	var pythnetEmitterAddress1 = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-	var pythnetEmitterAddress2 = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}
-	var solanaEmitterAddress1 = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	var SolanaEmitterAddress1 = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	var SolanaEmitterAddress2 = vaa.Address{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}
 
 	dbPath := t.TempDir()
 	db, err := Open(dbPath)
@@ -179,8 +146,7 @@ func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 
 	// Create 50 VAAs each for each emitter that are more than three days old.
 	timeStamp := now.Add(-time.Hour * time.Duration(3*24+1))
-	pythnetSeqNum := uint64(10000)
-	solanaSeqNum := uint64(20000)
+	solanaSeqNum := uint64(10000)
 	for count := 0; count < 50; count++ {
 		err = storeVAA(db, &vaa.VAA{
 			Version:          uint8(1),
@@ -188,29 +154,13 @@ func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 			Signatures:       nil,
 			Timestamp:        timeStamp,
 			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
+			Sequence:         solanaSeqNum,
 			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   pythnetEmitterAddress1,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   SolanaEmitterAddress1,
 			Payload:          payload,
 		})
 		require.NoError(t, err)
-
-		err = storeVAA(db, &vaa.VAA{
-			Version:          uint8(1),
-			GuardianSetIndex: uint32(1),
-			Signatures:       nil,
-			Timestamp:        timeStamp,
-			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
-			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   pythnetEmitterAddress2,
-			Payload:          payload,
-		})
-		require.NoError(t, err)
-
-		pythnetSeqNum++
 
 		err = storeVAA(db, &vaa.VAA{
 			Version:          uint8(1),
@@ -221,10 +171,11 @@ func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 			Sequence:         solanaSeqNum,
 			ConsistencyLevel: uint8(32),
 			EmitterChain:     vaa.ChainIDSolana,
-			EmitterAddress:   solanaEmitterAddress1,
+			EmitterAddress:   SolanaEmitterAddress2,
 			Payload:          payload,
 		})
 		require.NoError(t, err)
+
 		solanaSeqNum++
 	}
 
@@ -237,29 +188,13 @@ func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 			Signatures:       nil,
 			Timestamp:        timeStamp,
 			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
+			Sequence:         solanaSeqNum,
 			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   pythnetEmitterAddress1,
+			EmitterChain:     vaa.ChainIDSolana,
+			EmitterAddress:   SolanaEmitterAddress1,
 			Payload:          payload,
 		})
 		require.NoError(t, err)
-
-		err = storeVAA(db, &vaa.VAA{
-			Version:          uint8(1),
-			GuardianSetIndex: uint32(1),
-			Signatures:       nil,
-			Timestamp:        timeStamp,
-			Nonce:            uint32(1),
-			Sequence:         pythnetSeqNum,
-			ConsistencyLevel: uint8(32),
-			EmitterChain:     vaa.ChainIDPythNet,
-			EmitterAddress:   pythnetEmitterAddress2,
-			Payload:          payload,
-		})
-		require.NoError(t, err)
-
-		pythnetSeqNum++
 
 		err = storeVAA(db, &vaa.VAA{
 			Version:          uint8(1),
@@ -270,28 +205,27 @@ func TestPurgingVAAsForOneEmitterAddress(t *testing.T) {
 			Sequence:         solanaSeqNum,
 			ConsistencyLevel: uint8(32),
 			EmitterChain:     vaa.ChainIDSolana,
-			EmitterAddress:   solanaEmitterAddress1,
+			EmitterAddress:   SolanaEmitterAddress2,
 			Payload:          payload,
 		})
 		require.NoError(t, err)
+
 		solanaSeqNum++
 	}
 
 	// Before we do the purge, make sure the database contains what we expect.
-	numPythnet, numOther, err := countVAAs(db, vaa.ChainIDPythNet)
+	numSolana, _, err := countVAAs(db, vaa.ChainIDSolana)
 	require.NoError(t, err)
-	assert.Equal(t, 250, numPythnet)
-	assert.Equal(t, 125, numOther)
+	assert.Equal(t, 250, numSolana)
 
-	// Purge VAAs for a single PythNet emitter that are more than three days old.
+	// Purge VAAs for a single Solana emitter that are more than three days old.
 	oldestTime := now.Add(-time.Hour * time.Duration(3*24))
-	prefix := VAAID{EmitterChain: vaa.ChainIDPythNet, EmitterAddress: pythnetEmitterAddress1}
+	prefix := VAAID{EmitterChain: vaa.ChainIDSolana, EmitterAddress: SolanaEmitterAddress1}
 	_, err = db.PurgeVaas(prefix, oldestTime, false)
 	require.NoError(t, err)
 
-	// Make sure we deleted the old PythNet VAAs but didn't touch the Solana ones.
-	numPythnet, numOther, err = countVAAs(db, vaa.ChainIDPythNet)
+	// Make sure we deleted the old Solana VAAs but didn't touch the Solana ones.
+	numSolana, _, err = countVAAs(db, vaa.ChainIDSolana)
 	require.NoError(t, err)
-	assert.Equal(t, 200, numPythnet)
-	assert.Equal(t, 125, numOther)
+	assert.Equal(t, 200, numSolana)
 }

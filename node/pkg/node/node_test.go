@@ -188,7 +188,7 @@ func mockGuardianRunnable(t testing.TB, gs []*mockGuardian, mockGuardianIndex ui
 			GuardianOptionDatabase(db),
 			GuardianOptionWatchers(watcherConfigs),
 			GuardianOptionGovernor(true),
-			GuardianOptionP2P(gs[mockGuardianIndex].p2pKey, networkID, bootstrapPeers, nodeName, false, cfg.p2pPort, "", 0, "", func() string { return "" }),
+			GuardianOptionP2P(gs[mockGuardianIndex].p2pKey, networkID, bootstrapPeers, nodeName, false, cfg.p2pPort, "", 0, ""),
 			GuardianOptionPublicRpcSocket(cfg.publicSocket, publicRpcLogDetail),
 			GuardianOptionPublicrpcTcpService(cfg.publicRpc, publicRpcLogDetail),
 			GuardianOptionPublicWeb(cfg.publicWeb, cfg.publicSocket, "", false, ""),
@@ -431,7 +431,7 @@ func governedMsg(shouldBeDelayed bool) *common.MessagePublication {
 	payloadBytes := buildMockTransferPayloadBytes(
 		vaa.ChainIDSolana,
 		tokenAddrStr,
-		vaa.ChainIDEthereum,
+		vaa.ChainIDSolana,
 		toAddrStr,
 		amount, // very large number to exceed governor limit
 	)
@@ -558,7 +558,7 @@ func TestConsensus(t *testing.T) {
 	msgGov, msgGovProto := createGovernanceMsgAndVaa(t)
 
 	msgWrongEmitterChain := someMessage()
-	msgWrongEmitterChain.EmitterChain = vaa.ChainIDEthereum
+	msgWrongEmitterChain.EmitterChain = vaa.ChainIDSolana
 
 	// define the test cases to be executed
 	// The ones with mustNotReachQuorum=true should be defined first to give them more time to execute.
@@ -859,7 +859,7 @@ func TestWatcherConfigs(t *testing.T) {
 					},
 					&mock.WatcherConfig{
 						NetworkID:           "mock2",
-						ChainID:             vaa.ChainIDEthereum,
+						ChainID:             vaa.ChainIDSolana,
 						L1FinalizerRequired: "mock1",
 					},
 				}),

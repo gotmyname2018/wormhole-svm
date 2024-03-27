@@ -27,9 +27,6 @@ func TestParseEnvironment(t *testing.T) {
 		{input: "GoTest", output: GoTest, err: false},
 		{input: "unit-test", output: GoTest, err: false},
 
-		{input: "AccountantMock", output: AccountantMock, err: false},
-		{input: "accountant-mock", output: AccountantMock, err: false},
-
 		{input: "junk", output: UnsafeDevNet, err: true},
 		{input: "", output: UnsafeDevNet, err: true},
 	}

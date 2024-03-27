@@ -39,8 +39,6 @@ const (
 
 var (
 	nonce = uint32(0)
-
-	watcherChainsForTest = []vaa.ChainID{vaa.ChainIDPolygon, vaa.ChainIDBSC, vaa.ChainIDArbitrum}
 )
 
 // createSignedQueryRequestForTesting creates a query request object and signs it using the specified key.
