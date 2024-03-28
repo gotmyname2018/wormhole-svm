@@ -1,6 +1,5 @@
 import { BN } from "@project-serum/anchor";
 import { PublicKey, PublicKeyInitData } from "@solana/web3.js";
-import { ChainId, tryNativeToHexString } from "../utils";
 import { MockEmitter } from "./wormhole";
 
 export class MockTokenBridge extends MockEmitter {
@@ -153,38 +152,6 @@ export class MockTokenBridge extends MockEmitter {
         ),
         payload,
       ]),
-      nonce,
-      timestamp,
-      uptickSequence
-    );
-  }
-}
-
-export class MockEthereumTokenBridge extends MockTokenBridge {
-  constructor(emitterAddress: string, startSequence?: number) {
-    const chain = 2;
-    super(
-      tryNativeToHexString(emitterAddress, chain as ChainId),
-      chain,
-      15,
-      startSequence
-    );
-  }
-
-  publishAttestMeta(
-    tokenAddress: string,
-    decimals: number,
-    symbol: string,
-    name: string,
-    nonce?: number,
-    timestamp?: number,
-    uptickSequence: boolean = true
-  ) {
-    return super.publishAttestMeta(
-      tryNativeToHexString(tokenAddress, this.chain as ChainId),
-      decimals,
-      symbol == undefined ? "" : symbol,
-      name == undefined ? "" : name,
       nonce,
       timestamp,
       uptickSequence

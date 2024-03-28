@@ -44,8 +44,6 @@ type NodePrivilegedServiceClient interface {
 	ChainGovernorReleasePendingVAA(ctx context.Context, in *ChainGovernorReleasePendingVAARequest, opts ...grpc.CallOption) (*ChainGovernorReleasePendingVAAResponse, error)
 	// ChainGovernorResetReleaseTimer resets the release timer for a chain governor pending VAA to the configured maximum.
 	ChainGovernorResetReleaseTimer(ctx context.Context, in *ChainGovernorResetReleaseTimerRequest, opts ...grpc.CallOption) (*ChainGovernorResetReleaseTimerResponse, error)
-	// PurgePythNetVaas deletes PythNet VAAs from the database that are more than the specified number of days old.
-	PurgePythNetVaas(ctx context.Context, in *PurgePythNetVaasRequest, opts ...grpc.CallOption) (*PurgePythNetVaasResponse, error)
 	// SignExistingVAA signs an existing VAA for a new guardian set using the local guardian key.
 	SignExistingVAA(ctx context.Context, in *SignExistingVAARequest, opts ...grpc.CallOption) (*SignExistingVAAResponse, error)
 	// DumpRPCs returns the RPCs being used by the guardian
@@ -134,15 +132,6 @@ func (c *nodePrivilegedServiceClient) ChainGovernorResetReleaseTimer(ctx context
 	return out, nil
 }
 
-func (c *nodePrivilegedServiceClient) PurgePythNetVaas(ctx context.Context, in *PurgePythNetVaasRequest, opts ...grpc.CallOption) (*PurgePythNetVaasResponse, error) {
-	out := new(PurgePythNetVaasResponse)
-	err := c.cc.Invoke(ctx, "/node.v1.NodePrivilegedService/PurgePythNetVaas", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *nodePrivilegedServiceClient) SignExistingVAA(ctx context.Context, in *SignExistingVAARequest, opts ...grpc.CallOption) (*SignExistingVAAResponse, error) {
 	out := new(SignExistingVAAResponse)
 	err := c.cc.Invoke(ctx, "/node.v1.NodePrivilegedService/SignExistingVAA", in, out, opts...)
@@ -200,8 +189,6 @@ type NodePrivilegedServiceServer interface {
 	ChainGovernorReleasePendingVAA(context.Context, *ChainGovernorReleasePendingVAARequest) (*ChainGovernorReleasePendingVAAResponse, error)
 	// ChainGovernorResetReleaseTimer resets the release timer for a chain governor pending VAA to the configured maximum.
 	ChainGovernorResetReleaseTimer(context.Context, *ChainGovernorResetReleaseTimerRequest) (*ChainGovernorResetReleaseTimerResponse, error)
-	// PurgePythNetVaas deletes PythNet VAAs from the database that are more than the specified number of days old.
-	PurgePythNetVaas(context.Context, *PurgePythNetVaasRequest) (*PurgePythNetVaasResponse, error)
 	// SignExistingVAA signs an existing VAA for a new guardian set using the local guardian key.
 	SignExistingVAA(context.Context, *SignExistingVAARequest) (*SignExistingVAAResponse, error)
 	// DumpRPCs returns the RPCs being used by the guardian
@@ -238,9 +225,6 @@ func (UnimplementedNodePrivilegedServiceServer) ChainGovernorReleasePendingVAA(c
 }
 func (UnimplementedNodePrivilegedServiceServer) ChainGovernorResetReleaseTimer(context.Context, *ChainGovernorResetReleaseTimerRequest) (*ChainGovernorResetReleaseTimerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChainGovernorResetReleaseTimer not implemented")
-}
-func (UnimplementedNodePrivilegedServiceServer) PurgePythNetVaas(context.Context, *PurgePythNetVaasRequest) (*PurgePythNetVaasResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PurgePythNetVaas not implemented")
 }
 func (UnimplementedNodePrivilegedServiceServer) SignExistingVAA(context.Context, *SignExistingVAARequest) (*SignExistingVAAResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignExistingVAA not implemented")
@@ -408,24 +392,6 @@ func _NodePrivilegedService_ChainGovernorResetReleaseTimer_Handler(srv interface
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NodePrivilegedService_PurgePythNetVaas_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PurgePythNetVaasRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NodePrivilegedServiceServer).PurgePythNetVaas(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/node.v1.NodePrivilegedService/PurgePythNetVaas",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NodePrivilegedServiceServer).PurgePythNetVaas(ctx, req.(*PurgePythNetVaasRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _NodePrivilegedService_SignExistingVAA_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SignExistingVAARequest)
 	if err := dec(in); err != nil {
@@ -518,10 +484,6 @@ var NodePrivilegedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChainGovernorResetReleaseTimer",
 			Handler:    _NodePrivilegedService_ChainGovernorResetReleaseTimer_Handler,
-		},
-		{
-			MethodName: "PurgePythNetVaas",
-			Handler:    _NodePrivilegedService_PurgePythNetVaas_Handler,
 		},
 		{
 			MethodName: "SignExistingVAA",

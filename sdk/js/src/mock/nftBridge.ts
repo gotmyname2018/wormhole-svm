@@ -1,7 +1,5 @@
-import { NodePrivilegedServiceChainGovernorReleasePendingVAADesc } from "@certusone/wormhole-sdk-proto-web/lib/cjs/node/v1/node";
 import { BN } from "@project-serum/anchor";
 import { PublicKey, PublicKeyInitData } from "@solana/web3.js";
-import { ChainId, tryNativeToHexString } from "../utils";
 import { MockEmitter } from "./wormhole";
 
 export class MockNftBridge extends MockEmitter {
@@ -70,13 +68,6 @@ export class MockNftBridge extends MockEmitter {
       timestamp,
       uptickSequence
     );
-  }
-}
-
-export class MockEthereumNftBridge extends MockNftBridge {
-  constructor(emitterAddress: string) {
-    const chain = 2;
-    super(tryNativeToHexString(emitterAddress, chain as ChainId), chain, 15);
   }
 }
 

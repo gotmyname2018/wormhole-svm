@@ -1,6 +1,4 @@
 import {
-  afterEach,
-  beforeEach,
   describe,
   expect,
   jest,
@@ -13,11 +11,8 @@ import {
   PublicKey,
   TransactionResponse,
 } from "@solana/web3.js";
-import { BigNumberish, ethers } from "ethers";
-import Web3 from "web3";
 import {
   ChainId,
-  CHAIN_ID_ETH,
   CHAIN_ID_SOLANA,
   CONTRACTS,
   nft_bridge,
@@ -26,34 +21,18 @@ import { postVaaSolanaWithRetry } from "../../solana";
 import { tryNativeToUint8Array } from "../../utils";
 import { parseNftTransferVaa } from "../../vaa";
 import {
-  ETH_NODE_URL,
-  ETH_PRIVATE_KEY,
   SOLANA_HOST,
   SOLANA_PRIVATE_KEY,
   TEST_SOLANA_TOKEN,
 } from "./utils/consts";
-import { getSignedVaaEthereum, getSignedVaaSolana } from "./utils/getSignedVaa";
+import { getSignedVaaSolana } from "./utils/getSignedVaa";
 
 jest.setTimeout(120000);
-
-// ethereum setup
-const web3 = new Web3(ETH_NODE_URL);
-let provider: ethers.providers.WebSocketProvider;
-let signer: ethers.Wallet;
 
 // solana setup
 const connection = new Connection(SOLANA_HOST, "confirmed");
 const keypair = Keypair.fromSecretKey(SOLANA_PRIVATE_KEY);
 const payerAddress = keypair.publicKey.toString();
-
-beforeEach(() => {
-  provider = new ethers.providers.WebSocketProvider(ETH_NODE_URL);
-  signer = new ethers.Wallet(ETH_PRIVATE_KEY, provider); // corresponds to accounts[1]
-});
-
-afterEach(() => {
-  provider.destroy();
-});
 
 describe("Integration Tests", () => {
   test("Send Solana SPL to Ethereum and back", (done) => {
@@ -117,32 +96,6 @@ describe("Integration Tests", () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Utils
 
-async function expectReceivedOnEth(signedVAA: Uint8Array) {
-  return expect(
-    await nft_bridge.getIsTransferCompletedEth(
-      CONTRACTS.DEVNET.ethereum.nft_bridge,
-      provider,
-      signedVAA
-    )
-  );
-}
-
-async function _transferFromEth(
-  erc721: string,
-  token_id: BigNumberish,
-  address: string,
-  chain: ChainId
-): Promise<ethers.ContractReceipt> {
-  return nft_bridge.transferFromEth(
-    CONTRACTS.DEVNET.ethereum.nft_bridge,
-    signer,
-    erc721,
-    token_id,
-    chain,
-    tryNativeToUint8Array(address, chain)
-  );
-}
-
 async function _transferFromSolana(
   fromAddress: PublicKey,
   tokenAddress: string,
@@ -174,16 +127,6 @@ async function _transferFromSolana(
     throw new Error("An error occurred while fetching the transaction info");
   }
   return info;
-}
-
-async function _redeemOnEth(
-  signedVAA: Uint8Array
-): Promise<ethers.ContractReceipt> {
-  return nft_bridge.redeemOnEth(
-    CONTRACTS.DEVNET.ethereum.nft_bridge,
-    signer,
-    signedVAA
-  );
 }
 
 async function _redeemOnSolana(signedVAA: Uint8Array) {

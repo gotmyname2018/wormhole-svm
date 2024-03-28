@@ -4,9 +4,6 @@ import { BinaryWriter } from "./BinaryWriter";
 import { Network } from "./consts";
 import { coalesceUint8Array, hexToUint8Array } from "./utils";
 import { BinaryReader } from "./BinaryReader";
-import { EthCallQueryRequest } from "./ethCall";
-import { EthCallByTimestampQueryRequest } from "./ethCallByTimestamp";
-import { EthCallWithFinalityQueryRequest } from "./ethCallWithFinality";
 import { SolanaAccountQueryRequest } from "./solanaAccount";
 import { SolanaPdaQueryRequest } from "./solanaPda";
 
@@ -97,13 +94,7 @@ export class PerChainQueryRequest {
     const queryType = reader.readUint8();
     reader.readUint32(); // skip the query length
     let query: ChainSpecificQuery;
-    if (queryType === ChainQueryType.EthCall) {
-      query = EthCallQueryRequest.fromReader(reader);
-    } else if (queryType === ChainQueryType.EthCallByTimeStamp) {
-      query = EthCallByTimestampQueryRequest.fromReader(reader);
-    } else if (queryType === ChainQueryType.EthCallWithFinality) {
-      query = EthCallWithFinalityQueryRequest.fromReader(reader);
-    } else if (queryType === ChainQueryType.SolanaAccount) {
+    if (queryType === ChainQueryType.SolanaAccount) {
       query = SolanaAccountQueryRequest.fromReader(reader);
     } else if (queryType === ChainQueryType.SolanaPda) {
       query = SolanaPdaQueryRequest.fromReader(reader);
@@ -120,9 +111,6 @@ export interface ChainSpecificQuery {
 }
 
 export enum ChainQueryType {
-  EthCall = 1,
-  EthCallByTimeStamp = 2,
-  EthCallWithFinality = 3,
   SolanaAccount = 4,
   SolanaPda = 5,
 }

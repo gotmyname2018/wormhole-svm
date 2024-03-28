@@ -4,9 +4,6 @@ import { coalesceUint8Array, hexToUint8Array } from "./utils";
 import { BinaryReader } from "./BinaryReader";
 import { ChainQueryType, ChainSpecificQuery, QueryRequest } from "./request";
 import { BinaryWriter } from "./BinaryWriter";
-import { EthCallQueryResponse } from "./ethCall";
-import { EthCallByTimestampQueryResponse } from "./ethCallByTimestamp";
-import { EthCallWithFinalityQueryResponse } from "./ethCallWithFinality";
 import { SolanaAccountQueryResponse } from "./solanaAccount";
 import { SolanaPdaQueryResponse } from "./solanaPda";
 
@@ -105,13 +102,7 @@ export class PerChainQueryResponse {
     const queryType = reader.readUint8();
     reader.readUint32(); // skip the query length
     let response: ChainSpecificResponse;
-    if (queryType === ChainQueryType.EthCall) {
-      response = EthCallQueryResponse.fromReader(reader);
-    } else if (queryType === ChainQueryType.EthCallByTimeStamp) {
-      response = EthCallByTimestampQueryResponse.fromReader(reader);
-    } else if (queryType === ChainQueryType.EthCallWithFinality) {
-      response = EthCallWithFinalityQueryResponse.fromReader(reader);
-    } else if (queryType === ChainQueryType.SolanaAccount) {
+    if (queryType === ChainQueryType.SolanaAccount) {
       response = SolanaAccountQueryResponse.fromReader(reader);
     } else if (queryType === ChainQueryType.SolanaPda) {
       response = SolanaPdaQueryResponse.fromReader(reader);

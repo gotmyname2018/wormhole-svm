@@ -321,8 +321,6 @@ mod tests {
     enum Chain {
         Unset = 0,
         Solana = 1,
-        Ethereum = 2,
-        Terra = 3,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]

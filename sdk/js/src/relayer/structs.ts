@@ -58,16 +58,6 @@ export interface VaaKey {
   sequence: BigNumber;
 }
 
-export interface CCTPKey {
-  domain: number;
-  nonce: ethers.BigNumber;
-}
-
-export interface CCTPMessage {
-  message: Buffer;
-  signature: Buffer;
-}
-
 export interface DeliveryInstruction {
   targetChainId: number;
   targetAddress: Buffer;
@@ -108,11 +98,6 @@ export type RedeliveryInstructionPrintable = {
     RedeliveryInstruction[Property]
   >;
 };
-
-export interface EVMExecutionInfoV1 {
-  gasLimit: BigNumber;
-  targetChainRefundPerGasUnused: BigNumber;
-}
 
 export enum VaaKeyType {
   EMITTER_SEQUENCE = 0,
@@ -252,20 +237,6 @@ export function packMessageKey(key: MessageKey): string {
   return ethers.utils.hexlify(bytes);
 }
 
-export function parseCCTPKey(_bytes: ethers.BytesLike): CCTPKey {
-  const bytes = Buffer.from(ethers.utils.arrayify(_bytes));
-  const domain = bytes.readUInt32BE(0);
-  const nonce = ethers.BigNumber.from(bytes.readBigUInt64BE(4));
-  return { domain, nonce };
-}
-
-export function packCCTPKey(key: CCTPKey): string {
-  const buf = Buffer.alloc(4 + 8);
-  buf.writeUInt32BE(key.domain, 0);
-  buf.writeBigUInt64BE(key.nonce.toBigInt(), 4);
-  return ethers.utils.hexlify(buf);
-}
-
 export function parseVaaKey(_bytes: ethers.BytesLike): VaaKey {
   const bytes = Buffer.from(ethers.utils.arrayify(_bytes));
   let idx = 0;
@@ -290,53 +261,6 @@ export function packVaaKey(vaaKey: VaaKey): string {
   bytes.fill(vaaKey.emitterAddress, 2, 34);
   bytes.writeBigUInt64BE(vaaKey.sequence.toBigInt(), 34);
   return ethers.utils.hexlify(bytes);
-}
-
-export function packCCTPMessage(message: CCTPMessage): string {
-  return ethers.utils.defaultAbiCoder.encode(
-    ["bytes", "bytes"],
-    [message.message, message.signature]
-  );
-}
-
-export function parseCCTPMessage(bytes: ethers.BytesLike): CCTPMessage {
-  const [message, signature] = ethers.utils.defaultAbiCoder.decode(
-    ["bytes", "bytes"],
-    bytes
-  );
-  return { message, signature };
-}
-
-export function parseEVMExecutionInfoV1(
-  bytes: Buffer,
-  idx: number
-): [EVMExecutionInfoV1, number] {
-  idx += 31;
-  const version = bytes.readUInt8(idx);
-  idx += 1;
-  if (version !== ExecutionInfoVersion.EVM_V1) {
-    throw new Error("Unexpected Execution Info version");
-  }
-  const gasLimit = ethers.BigNumber.from(
-    Uint8Array.prototype.subarray.call(bytes, idx, idx + 32)
-  );
-  idx += 32;
-  const targetChainRefundPerGasUnused = ethers.BigNumber.from(
-    Uint8Array.prototype.subarray.call(bytes, idx, idx + 32)
-  );
-  idx += 32;
-  return [{ gasLimit, targetChainRefundPerGasUnused }, idx];
-}
-
-export function packEVMExecutionInfoV1(info: EVMExecutionInfoV1): string {
-  return ethers.utils.defaultAbiCoder.encode(
-    ["uint8", "uint256", "uint256"],
-    [
-      ExecutionInfoVersion.EVM_V1,
-      info.gasLimit,
-      info.targetChainRefundPerGasUnused,
-    ]
-  );
 }
 
 export function parseWormholeRelayerResend(
@@ -381,9 +305,9 @@ export function parseWormholeRelayerResend(
   };
 }
 
+// TBDel
 export function executionInfoToString(encodedExecutionInfo: Buffer): string {
-  const [parsed] = parseEVMExecutionInfoV1(encodedExecutionInfo, 0);
-  return `Gas limit: ${parsed.gasLimit}, Target chain refund per unit gas unused: ${parsed.targetChainRefundPerGasUnused}`;
+  return `Gas limit: 0, Target chain refund per unit gas unused: 0`;
 }
 
 export function deliveryInstructionsPrintable(
@@ -407,20 +331,13 @@ export function deliveryInstructionsPrintable(
 
 export function messageKeyPrintable(
   ix: MessageKey
-): StringLeaves<(VaaKey | CCTPKey | { key: string }) & { keyType: number }> {
+): StringLeaves<(VaaKey | { key: string }) & { keyType: number }> {
   switch (ix.keyType) {
     case KeyType.VAA:
       return {
         keyType: "VAA",
         ...(vaaKeyPrintable(parseVaaKey(ix.key)) as {
           [P in keyof VaaKey]: StringLeaves<VaaKey[P]>;
-        }),
-      };
-    case KeyType.CCTP:
-      return {
-        keyType: "CCTP",
-        ...(cctpKeyPrintable(parseCCTPKey(ix.key)) as {
-          [P in keyof CCTPKey]: StringLeaves<CCTPKey[P]>;
         }),
       };
     default:
@@ -436,13 +353,6 @@ export function vaaKeyPrintable(ix: VaaKey): StringLeaves<VaaKey> {
     chainId: ix.chainId?.toString(),
     emitterAddress: ix.emitterAddress?.toString("hex"),
     sequence: ix.sequence?.toString(),
-  };
-}
-
-export function cctpKeyPrintable(ix: CCTPKey): StringLeaves<CCTPKey> {
-  return {
-    domain: ix.domain.toString(),
-    nonce: ix.nonce.toString(),
   };
 }
 

@@ -1,12 +1,9 @@
 import {
-  afterAll,
-  beforeAll,
   describe,
   expect,
   jest,
   test,
 } from "@jest/globals";
-import Web3, { ETH_DATA_FORMAT } from "web3";
 import axios from "axios";
 import { AxiosResponse } from "axios";
 import base58 from "bs58";

@@ -1,75 +1,14 @@
-import { arrayify, zeroPad } from "@ethersproject/bytes";
+import { zeroPad } from "@ethersproject/bytes";
 import { PublicKey } from "@solana/web3.js";
-import { hexValue, hexZeroPad, sha256, stripZeros } from "ethers/lib/utils";
-import { Provider as NearProvider } from "near-api-js/lib/providers";
 import { ethers } from "ethers";
-import {
-  hexToNativeAssetStringAlgorand,
-  nativeStringToHexAlgorand,
-  uint8ArrayToNativeStringAlgorand,
-} from "../algorand";
-import { canonicalAddress, humanAddress } from "../cosmos";
-import { buildTokenId } from "../cosmwasm/address";
-import { isNativeDenom } from "../terra";
+
 import {
   ChainId,
   ChainName,
-  CHAIN_ID_ALGORAND,
-  CHAIN_ID_APTOS,
-  CHAIN_ID_INJECTIVE,
-  CHAIN_ID_NEAR,
-  CHAIN_ID_OSMOSIS,
-  CHAIN_ID_PYTHNET,
   CHAIN_ID_SOLANA,
-  CHAIN_ID_SUI,
-  CHAIN_ID_TERRA,
-  CHAIN_ID_TERRA2,
-  CHAIN_ID_WORMCHAIN,
   CHAIN_ID_UNSET,
   coalesceChainId,
-  isEVMChain,
-  isTerraChain,
-  CHAIN_ID_XPLA,
-  CHAIN_ID_SEI,
-  CHAIN_ID_BTC,
-  CHAIN_ID_COSMOSHUB,
-  CHAIN_ID_EVMOS,
-  CHAIN_ID_KUJIRA,
-  CHAIN_ID_NEUTRON,
-  CHAIN_ID_CELESTIA,
-  CHAIN_ID_STARGAZE,
-  CHAIN_ID_SEDA,
-  CHAIN_ID_DYMENSION,
 } from "./consts";
-import { hashLookup } from "./near";
-import { getExternalAddressFromType, isValidAptosType } from "./aptos";
-import { isValidSuiAddress } from "@mysten/sui.js";
-import { isValidSuiType } from "../sui";
-
-/**
- *
- * Returns true iff the hex string represents a native Terra denom.
- *
- * Native assets on terra don't have an associated smart contract address, just
- * like eth isn't an ERC-20 contract on Ethereum.
- *
- * The difference is that the EVM implementations of Portal don't support eth
- * directly, and instead require swapping to an ERC-20 wrapped eth (WETH)
- * contract first.
- *
- * The Terra implementation instead supports Terra-native denoms without
- * wrapping to CW-20 token first. As these denoms don't have an address, they
- * are encoded in the Portal payloads by the setting the first byte to 1.  This
- * encoding is safe, because the first 12 bytes of the 32-byte wormhole address
- * space are not used on Terra otherwise, as cosmos addresses are 20 bytes wide.
- */
-export const isHexNativeTerra = (h: string): boolean => h.startsWith("01");
-
-const isLikely20ByteCosmwasm = (h: string): boolean =>
-  h.startsWith("000000000000000000000000");
-
-export const nativeTerraHexToDenom = (h: string): string =>
-  Buffer.from(stripZeros(hexToUint8Array(h.substr(2)))).toString("ascii");
 
 export const uint8ArrayToHex = (a: Uint8Array): string =>
   Buffer.from(a).toString("hex");
@@ -92,83 +31,15 @@ export const tryUint8ArrayToNative = (
   chain: ChainId | ChainName
 ): string => {
   const chainId = coalesceChainId(chain);
-  if (isEVMChain(chainId)) {
-    return hexZeroPad(hexValue(a), 20);
-  } else if (chainId === CHAIN_ID_SOLANA || chainId === CHAIN_ID_PYTHNET) {
+  if (chainId === CHAIN_ID_SOLANA) {
     return new PublicKey(a).toString();
-  } else if (isTerraChain(chainId)) {
-    const h = uint8ArrayToHex(a);
-    if (isHexNativeTerra(h)) {
-      return nativeTerraHexToDenom(h);
-    } else {
-      if (chainId === CHAIN_ID_TERRA2 && !isLikely20ByteCosmwasm(h)) {
-        // terra 2 has 32 byte addresses for contracts and 20 for wallets
-        return humanAddress("terra", a);
-      }
-      return humanAddress("terra", a.slice(-20));
-    }
-  } else if (chainId === CHAIN_ID_INJECTIVE) {
-    const h = uint8ArrayToHex(a);
-    return humanAddress("inj", isLikely20ByteCosmwasm(h) ? a.slice(-20) : a);
-  } else if (chainId === CHAIN_ID_ALGORAND) {
-    return uint8ArrayToNativeStringAlgorand(a);
-  } else if (chainId == CHAIN_ID_WORMCHAIN) {
-    const h = uint8ArrayToHex(a);
-    return humanAddress(
-      "wormhole",
-      isLikely20ByteCosmwasm(h) ? a.slice(-20) : a
-    );
-  } else if (chainId === CHAIN_ID_XPLA) {
-    const h = uint8ArrayToHex(a);
-    return humanAddress("xpla", isLikely20ByteCosmwasm(h) ? a.slice(-20) : a);
-  } else if (chainId === CHAIN_ID_SEI) {
-    const h = uint8ArrayToHex(a);
-    return humanAddress("sei", isLikely20ByteCosmwasm(h) ? a.slice(-20) : a);
-  } else if (chainId === CHAIN_ID_NEAR) {
-    throw Error("uint8ArrayToNative: Use tryHexToNativeStringNear instead.");
-  } else if (chainId === CHAIN_ID_OSMOSIS) {
-    throw Error("uint8ArrayToNative: Osmosis not supported yet.");
-  } else if (chainId === CHAIN_ID_COSMOSHUB) {
-    throw Error("uint8ArrayToNative: CosmosHub not supported yet.");
-  } else if (chainId === CHAIN_ID_EVMOS) {
-    throw Error("uint8ArrayToNative: Evmos not supported yet.");
-  } else if (chainId === CHAIN_ID_KUJIRA) {
-    throw Error("uint8ArrayToNative: Kujira not supported yet.");
-  } else if (chainId === CHAIN_ID_NEUTRON) {
-    throw Error("uint8ArrayToNative: Neutron not supported yet.");
-  } else if (chainId === CHAIN_ID_CELESTIA) {
-    throw Error("uint8ArrayToNative: Celestia not supported yet.");
-  } else if (chainId === CHAIN_ID_STARGAZE) {
-    throw Error("uint8ArrayToNative: Stargaze not supported yet.");
-  } else if (chainId === CHAIN_ID_SEDA) {
-    throw Error("uint8ArrayToNative: Seda not supported yet.");
-  } else if (chainId === CHAIN_ID_DYMENSION) {
-    throw Error("uint8ArrayToNative: Dymension not supported yet.");
-  } else if (chainId === CHAIN_ID_SUI) {
-    throw Error("uint8ArrayToNative: Sui not supported yet.");
-  } else if (chainId === CHAIN_ID_APTOS) {
-    throw Error("uint8ArrayToNative: Aptos not supported yet.");
   } else if (chainId === CHAIN_ID_UNSET) {
     throw Error("uint8ArrayToNative: Chain id unset");
-  } else if (chainId === CHAIN_ID_BTC) {
-    throw Error("uint8ArrayToNative: Btc not supported");
   } else {
     // This case is never reached
     const _: never = chainId;
     throw Error("Don't know how to convert address for chain " + chainId);
   }
-};
-
-export const tryHexToNativeStringNear = async (
-  provider: NearProvider,
-  tokenBridge: string,
-  address: string
-): Promise<string> => {
-  const { found, value } = await hashLookup(provider, tokenBridge, address);
-  if (!found) {
-    throw new Error("Address not found");
-  }
-  return value;
 };
 
 /**
@@ -179,31 +50,7 @@ export const tryHexToNativeStringNear = async (
  * @throws if address is not the right length for the given chain
  */
 export const tryHexToNativeAssetString = (h: string, c: ChainId): string =>
-  c === CHAIN_ID_ALGORAND
-    ? // Algorand assets are represented by their asset ids, not an address
-      hexToNativeAssetStringAlgorand(h)
-    : tryHexToNativeString(h, c);
-
-/**
- *
- * Convert an address in a wormhole's 32-byte hex representation into a chain's native
- * string representation.
- *
- * @deprecated since 0.3.0, use [[tryHexToNativeString]] instead.
- */
-export const hexToNativeAssetString = (
-  h: string | undefined,
-  c: ChainId
-): string | undefined => {
-  if (!h) {
-    return undefined;
-  }
-  try {
-    return tryHexToNativeAssetString(h, c);
-  } catch (e) {
-    return undefined;
-  }
-};
+  tryHexToNativeString(h, c);
 
 /**
  *
@@ -219,28 +66,6 @@ export const tryHexToNativeString = (
 
 /**
  *
- * Convert an address in a wormhole's 32-byte hex representation into a chain's native
- * string representation.
- *
- * @deprecated since 0.3.0, use [[tryHexToNativeString]] instead.
- */
-export const hexToNativeString = (
-  h: string | undefined,
-  c: ChainId | ChainName
-): string | undefined => {
-  if (!h) {
-    return undefined;
-  }
-
-  try {
-    return tryHexToNativeString(h, c);
-  } catch (e) {
-    return undefined;
-  }
-};
-
-/**
- *
  * Convert an address in a chain's native representation into a 32-byte hex string
  * understood by wormhole.
  *
@@ -251,69 +76,8 @@ export const tryNativeToHexString = (
   chain: ChainId | ChainName
 ): string => {
   const chainId = coalesceChainId(chain);
-  if (isEVMChain(chainId)) {
-    return uint8ArrayToHex(zeroPad(arrayify(address), 32));
-  } else if (chainId === CHAIN_ID_SOLANA || chainId === CHAIN_ID_PYTHNET) {
+  if (chainId === CHAIN_ID_SOLANA) {
     return uint8ArrayToHex(zeroPad(new PublicKey(address).toBytes(), 32));
-  } else if (chainId === CHAIN_ID_TERRA) {
-    if (isNativeDenom(address)) {
-      return (
-        "01" +
-        uint8ArrayToHex(
-          zeroPad(new Uint8Array(Buffer.from(address, "ascii")), 31)
-        )
-      );
-    } else {
-      return uint8ArrayToHex(zeroPad(canonicalAddress(address), 32));
-    }
-  } else if (
-    chainId === CHAIN_ID_TERRA2 ||
-    chainId === CHAIN_ID_INJECTIVE ||
-    chainId === CHAIN_ID_XPLA ||
-    chainId === CHAIN_ID_SEI
-  ) {
-    return buildTokenId(chainId, address);
-  } else if (chainId === CHAIN_ID_ALGORAND) {
-    return nativeStringToHexAlgorand(address);
-  } else if (chainId == CHAIN_ID_WORMCHAIN) {
-    return uint8ArrayToHex(zeroPad(canonicalAddress(address), 32));
-  } else if (chainId === CHAIN_ID_NEAR) {
-    return uint8ArrayToHex(arrayify(sha256(Buffer.from(address))));
-  } else if (chainId === CHAIN_ID_OSMOSIS) {
-    throw Error("nativeToHexString: Osmosis not supported yet.");
-  } else if (chainId === CHAIN_ID_COSMOSHUB) {
-    throw Error("nativeToHexString: CosmosHub not supported yet.");
-  } else if (chainId === CHAIN_ID_EVMOS) {
-    throw Error("nativeToHexString: Evmos not supported yet.");
-  } else if (chainId === CHAIN_ID_KUJIRA) {
-    throw Error("nativeToHexString: Kujira not supported yet.");
-  } else if (chainId === CHAIN_ID_NEUTRON) {
-    throw Error("nativeToHexString: Neutron not supported yet.");
-  } else if (chainId === CHAIN_ID_CELESTIA) {
-    throw Error("nativeToHexString: Celestia not supported yet.");
-  } else if (chainId === CHAIN_ID_STARGAZE) {
-    throw Error("nativeToHexString: Stargaze not supported yet.");
-  } else if (chainId === CHAIN_ID_SEDA) {
-    throw Error("nativeToHexString: Seda not supported yet.");
-  } else if (chainId === CHAIN_ID_DYMENSION) {
-    throw Error("nativeToHexString: Dymension not supported yet.");
-  } else if (chainId === CHAIN_ID_SUI) {
-    if (!isValidSuiType(address) && isValidSuiAddress(address)) {
-      return uint8ArrayToHex(
-        zeroPad(arrayify(address, { allowMissingPrefix: true }), 32)
-      );
-    }
-    throw Error("nativeToHexString: Sui types not supported yet.");
-  } else if (chainId === CHAIN_ID_BTC) {
-    throw Error("nativeToHexString: Btc not supported yet.");
-  } else if (chainId === CHAIN_ID_APTOS) {
-    if (isValidAptosType(address)) {
-      return getExternalAddressFromType(address);
-    }
-
-    return uint8ArrayToHex(
-      zeroPad(arrayify(address, { allowMissingPrefix: true }), 32)
-    );
   } else if (chainId === CHAIN_ID_UNSET) {
     throw Error("nativeToHexString: Chain id unset");
   } else {
@@ -321,24 +85,6 @@ export const tryNativeToHexString = (
     const _: never = chainId;
     throw Error("Don't know how to convert address from chain " + chainId);
   }
-};
-
-/**
- *
- * Convert an address in a chain's native representation into a 32-byte hex string
- * understood by wormhole.
- *
- * @deprecated since 0.3.0, use [[tryNativeToHexString]] instead.
- * @throws if address is a malformed string for the given chain id
- */
-export const nativeToHexString = (
-  address: string | undefined,
-  chain: ChainId | ChainName
-): string | null => {
-  if (!address) {
-    return null;
-  }
-  return tryNativeToHexString(address, chain);
 };
 
 /**
@@ -355,17 +101,6 @@ export function tryNativeToUint8Array(
   const chainId = coalesceChainId(chain);
   return hexToUint8Array(tryNativeToHexString(address, chainId));
 }
-
-/**
- *
- * Convert an address in a chain's native representation into a 32-byte hex string
- * understood by wormhole.
- *
- * @deprecated since 0.3.0, use [[tryUint8ArrayToNative]] instead.
- * @throws if address is a malformed string for the given chain id
- */
-export const uint8ArrayToNative = (a: Uint8Array, chainId: ChainId) =>
-  hexToNativeString(uint8ArrayToHex(a), chainId);
 
 export function chunks<T>(array: T[], size: number): T[][] {
   return Array.apply<number, T[], T[][]>(

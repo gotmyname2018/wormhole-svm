@@ -7,6 +7,7 @@ import { keccak256 } from "../utils";
 
 const ETHEREUM_CORE_BRIDGE = CONTRACTS["MAINNET"].ethereum.core;
 
+// TBDel
 function hex(x: string): string {
   return ethers.utils.hexlify(x, { allowMissingPrefix: true });
 }

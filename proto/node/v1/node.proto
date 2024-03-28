@@ -44,9 +44,6 @@ service NodePrivilegedService {
   // ChainGovernorResetReleaseTimer resets the release timer for a chain governor pending VAA to the configured maximum.
   rpc ChainGovernorResetReleaseTimer (ChainGovernorResetReleaseTimerRequest) returns (ChainGovernorResetReleaseTimerResponse);
 
-  // PurgePythNetVaas deletes PythNet VAAs from the database that are more than the specified number of days old.
-  rpc PurgePythNetVaas (PurgePythNetVaasRequest) returns (PurgePythNetVaasResponse);
-
   // SignExistingVAA signs an existing VAA for a new guardian set using the local guardian key.
   rpc SignExistingVAA (SignExistingVAARequest) returns (SignExistingVAAResponse);
 
@@ -93,28 +90,6 @@ message GovernanceMessage {
     // Core, Token bridge, and NFT module
     RecoverChainId recover_chain_id = 27;
 
-    // Wormchain
-
-    WormchainStoreCode wormchain_store_code = 14;
-    WormchainInstantiateContract wormchain_instantiate_contract = 15;
-    WormchainMigrateContract wormchain_migrate_contract = 16;
-    WormchainWasmInstantiateAllowlist wormchain_wasm_instantiate_allowlist = 23;
-
-    // Gateway
-    GatewayScheduleUpgrade gateway_schedule_upgrade = 24;
-    GatewayCancelUpgrade gateway_cancel_upgrade = 25;
-    GatewayIbcComposabilityMwSetContract gateway_ibc_composability_mw_set_contract = 26;
-
-    // Global Accountant
-    AccountantModifyBalance accountant_modify_balance = 17;
-
-    // Circle Integration
-    CircleIntegrationUpdateWormholeFinality circle_integration_update_wormhole_finality = 18;
-    CircleIntegrationRegisterEmitterAndDomain circle_integration_register_emitter_and_domain = 19;
-    CircleIntegrationUpgradeContractImplementation circle_integration_upgrade_contract_implementation = 20;
-
-    // IBC Receiver Integration
-    IbcUpdateChannelChain ibc_update_channel_chain = 21;
     // Wormhole Relayer module
     WormholeRelayerSetDefaultDeliveryProvider wormhole_relayer_set_default_delivery_provider = 22;
   }
@@ -165,30 +140,6 @@ enum ModificationKind {
   MODIFICATION_KIND_SUBTRACT = 2;
 }
 
-message AccountantModifyBalance {
-  // Module identifier of the accountant "GlobalAccountant"
-  string module = 1;
-  // ID of the chain to receive this modify.
-  uint32 target_chain_id = 2;
-
-  // The sequence number of this modification.  Each modification must be
-  // uniquely identifiable just by its sequnce number.
-  uint64 sequence = 3;
-  // U16 chain id of the account to be modified.
-  uint32 chain_id = 4;
-  // U16 the chain id of the native chain for the token.
-  uint32 token_chain = 5;
-  // The address of the token on its native chain, hex string encoded.
-  string token_address = 6;
-  // The kind of modification to be made.
-  ModificationKind kind = 7;
-  // The amount to be modified.  This should be a decimal formatted string indicating the
-  // "raw" amount, not adjusted by the decimals of the token.
-  string amount = 8;
-  // A human-readable reason for the modification (max 32 bytes).
-  string reason = 9;
-}
-
 // ContractUpgrade represents a Wormhole contract update to be submitted to and signed by the node.
 message ContractUpgrade {
   // ID of the chain where the Wormhole contract should be updated (uint8).
@@ -219,99 +170,6 @@ message RecoverChainId {
 
   // The new chain ID to be used for the chain
   uint32 new_chain_id = 3;
-}
-
-message WormchainStoreCode {
-  // payload is the hex string of the sha3 256 hash of the wasm binary being uploaded
-  string wasm_hash = 1;
-}
-
-message WormchainInstantiateContract {
-  // CodeID is the reference to the stored WASM code
-  uint64 code_id = 1;
-
-  // Label is optional metadata to be stored with a contract instance.
-  string label = 2;
-
-  // Json encoded message to be passed to the contract on instantiation
-  string instantiation_msg = 3;
-}
-
-message WormchainMigrateContract {
-  // CodeID is the reference to the stored WASM code that the contract should migrate to.
-  uint64 code_id = 1;
-
-  // The address of the contract being migrated.
-  string contract = 2;
-
-  // Msg json encoded message to be passed to the contract on migration
-  string instantiation_msg = 3;
-}
-
-enum WormchainWasmInstantiateAllowlistAction {
-  WORMCHAIN_WASM_INSTANTIATE_ALLOWLIST_ACTION_UNSPECIFIED = 0;
-  WORMCHAIN_WASM_INSTANTIATE_ALLOWLIST_ACTION_ADD = 1;
-  WORMCHAIN_WASM_INSTANTIATE_ALLOWLIST_ACTION_DELETE = 2;
-}
-
-message WormchainWasmInstantiateAllowlist {
-  // CodeID is the reference to the stored WASM code.
-  uint64 code_id = 1;
-
-  // The address of the contract that is allowlisted to call wasm instantiate without a VAA.
-  string contract = 2;
-
-  // Specifying whether to add or delete the allowlist entry
-  WormchainWasmInstantiateAllowlistAction action = 3;
-}
-
-message GatewayIbcComposabilityMwSetContract {
-    // The address of the contract that is set in the ibc composability middleware.
-    string contract = 1;
-}
-
-message GatewayScheduleUpgrade {
-  // Name of the upgrade
-  string name = 1;
-
-  // Height of the upgrade halt
-  uint64 height = 2;
-}
-
-message GatewayCancelUpgrade {}
-
-message CircleIntegrationUpdateWormholeFinality {
-  uint32 finality = 1;
-  uint32 target_chain_id = 2;
-}
-
-message CircleIntegrationRegisterEmitterAndDomain {
-  uint32 foreign_emitter_chain_id = 1;
-  string foreign_emitter_address = 2;
-  uint32 circle_domain = 3;
-  uint32 target_chain_id = 4;
-}
-
-message CircleIntegrationUpgradeContractImplementation {
-  string new_implementation_address = 1;
-  uint32 target_chain_id = 2;
-}
-
-enum IbcUpdateChannelChainModule {
-  IBC_UPDATE_CHANNEL_CHAIN_MODULE_UNSPECIFIED = 0;
-  IBC_UPDATE_CHANNEL_CHAIN_MODULE_RECEIVER = 1;
-  IBC_UPDATE_CHANNEL_CHAIN_MODULE_TRANSLATOR = 2;
-}
-
-message IbcUpdateChannelChain {
-  // Chain ID that this governance VAA should be redeemed on
-  uint32 target_chain_id = 1;
-  // IBC channel ID
-  string channel_id = 2;
-  // ChainID corresponding to the IBC channel
-  uint32 chain_id = 3;
-  // Specifying which governance module this message is for
-  IbcUpdateChannelChainModule module = 4;
 }
 
 message WormholeRelayerSetDefaultDeliveryProvider {
@@ -381,15 +239,6 @@ message ChainGovernorResetReleaseTimerRequest {
 }
 
 message ChainGovernorResetReleaseTimerResponse {
-  string response = 1;
-}
-
-message PurgePythNetVaasRequest {
-  uint64 days_old = 1;
-  bool log_only = 2;
-}
-
-message PurgePythNetVaasResponse {
   string response = 1;
 }
 

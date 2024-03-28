@@ -1,5 +1,5 @@
 import { keccak256 } from "../utils";
-import { ethPrivateToPublic, ethSignWithPrivate } from "./misc";
+import { solPrivateToPublic, solSignWithPrivate } from "./misc";
 
 const SIGNATURE_PAYLOAD_LEN = 66;
 
@@ -20,7 +20,7 @@ export class MockGuardians {
   }
 
   getPublicKeys() {
-    return this.signers.map((guardian) => ethPrivateToPublic(guardian.key));
+    return this.signers.map((guardian) => solPrivateToPublic(guardian.key));
   }
 
   updateGuardianSetIndex(setIndex: number) {
@@ -59,7 +59,7 @@ export class MockGuardians {
       if (signer == undefined) {
         throw Error("signer == undefined");
       }
-      const signature = ethSignWithPrivate(signer.key, hash);
+      const signature = solSignWithPrivate(signer.key, hash);
 
       const start = sigStart + i * SIGNATURE_PAYLOAD_LEN;
       signedVaa.writeUInt8(signer.index, start);
@@ -119,11 +119,5 @@ export class MockEmitter {
     message.write(payload.toString("hex"), 51, "hex");
 
     return message;
-  }
-}
-
-export class MockEthereumEmitter extends MockEmitter {
-  constructor(emitterAddress: string, chain?: number) {
-    super(emitterAddress, chain == undefined ? 2 : chain);
   }
 }
