@@ -2,7 +2,7 @@
 name = "solitaire"
 version = "0.1.0"
 description = "Solana program framework"
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -21,4 +21,4 @@ byteorder = "1.4.3"
 rocksalt = { path = "../../solitaire/rocksalt" }
 
 sha3 = "0.9.1"
-solana-program = "=1.10.31"
+solana-program = "=1.17.28"

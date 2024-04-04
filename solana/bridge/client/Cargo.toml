@@ -2,7 +2,7 @@
 name = "bridge_client"
 version = "0.1.0"
 authors = ["Stan Drozd <stan@nexantic.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 anyhow = "1.0.40"
@@ -12,10 +12,10 @@ cpi-poster = { path = "../cpi_poster", features = ["no-entrypoint"] }
 hex = "0.4.3"
 rand = "0.7.3"
 shellexpand = "2.1.0"
-solana-client = "=1.10.31"
-solana-program = "=1.10.31"
-solana-sdk = "=1.10.31"
-solana-cli-config = "=1.10.31"
-solana-clap-utils = "=1.10.31"
+solana-client = "=1.17.28"
+solana-program = "=1.17.28"
+solana-sdk = "=1.17.28"
+solana-cli-config = "=1.17.28"
+solana-clap-utils = "=1.17.28"
 solitaire = { path = "../../solitaire/program" }
 wormhole-bridge-solana = { path = "../program", features = ["client"] }

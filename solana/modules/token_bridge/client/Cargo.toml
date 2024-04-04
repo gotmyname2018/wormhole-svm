@@ -1,7 +1,7 @@
 [package]
 name = "token_bridge_client"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 anyhow = "1.0.40"
@@ -10,11 +10,11 @@ token-bridge = { path = "../program", features = ["client"] }
 clap = "2.33.0"
 rand = "0.7.3"
 shellexpand = "2.1.0"
-solana-client = "=1.10.31"
-solana-program = "=1.10.31"
-solana-sdk = "=1.10.31"
-solana-cli-config = "=1.10.31"
+solana-client = "=1.17.28"
+solana-program = "=1.17.28"
+solana-sdk = "=1.17.28"
+solana-cli-config = "=1.17.28"
 solitaire = { path = "../../../solitaire/program" }
-solana-clap-utils = "=1.10.31"
+solana-clap-utils = "=1.17.28"
 hex = "0.4.3"
-spl-token-metadata = { git = "https://github.com/wormhole-foundation/metaplex-program-library", rev = "a7ab32ab0defd89c98f205c80ebdaf77ed60152d", package = "mpl-token-metadata" }
+spl-token-metadata = { git = "https://github.com/gotmyname2018/mpl-token-metadata", rev = "fb2530905cd0df275bdd18dc843cef4358d2e74d", package = "mpl-token-metadata" }

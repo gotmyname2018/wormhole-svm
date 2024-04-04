@@ -138,6 +138,7 @@ pub fn complete_native(
             accs.payer.info().key,
             accs.to_authority.info().key,
             accs.mint.info().key,
+            &spl_token::id(),
         );
         invoke(&ix, ctx.accounts)?;
     } else if *accs.mint.info().key != accs.to.mint {
@@ -271,6 +272,7 @@ pub fn complete_wrapped(
             accs.payer.info().key,
             accs.to_authority.info().key,
             accs.mint.info().key,
+            &spl_token::id(),
         );
         invoke_signed(&ix, ctx.accounts, &[])?;
     } else if *accs.mint.info().key != accs.to.mint {

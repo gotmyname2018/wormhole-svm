@@ -2,7 +2,7 @@
 name = "cpi-poster"
 version = "0.1.0"
 description = "Wormhole bridge core contract"
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -18,9 +18,9 @@ trace = ["solitaire/trace"]
 [dependencies]
 borsh = "=0.9.3"
 byteorder = "1.4.3"
-primitive-types = { version = "0.9.0", default-features = false }
+primitive-types = { version = "0.12.2", default-features = false }
 sha3 = "0.9.1"
-solana-program = "=1.10.31"
+solana-program = "=1.17.28"
 wormhole-bridge-solana = { path = "../program", features = ["no-entrypoint"] }
 solitaire = { path = "../../solitaire/program" }
 
@@ -29,5 +29,5 @@ hex = "*"
 rand = "0.7.3"
 hex-literal = "0.3.1"
 libsecp256k1 = { version = "0.6.0", features = [] }
-solana-client = "=1.10.31"
-solana-sdk = "=1.10.31"
+solana-client = "=1.17.28"
+solana-sdk = "=1.17.28"
