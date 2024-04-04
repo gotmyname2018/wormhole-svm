@@ -1,7 +1,5 @@
 # This version should be kept up to date with the value in ci/rust-version.sh in
 # the branch of the solana repo that corresponds with the version we're using.
 [toolchain]
-channel = "stable"
-# channel = "1.73.0"
-# channel = "nightly-2022-02-24"
+channel = "1.73.0"
 profile = "minimal"
